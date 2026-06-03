@@ -35,22 +35,27 @@ const TRANSCRIPT_LINES = [
   "Thou who rulest wind and water, stand by me.",
 ];
 
-// ─── Waveform bar shape ───────────────────────────────────────────────────────
-// Fully rendered at all times. Dense, tall in the centre, shorter at edges.
+// ─── Waveform config ──────────────────────────────────────────────────────────
 
 const NUM_BARS = 130;
 
-const BAR_SHAPE: number[] = Array.from({ length: NUM_BARS }, (_, i) => {
-  const t = i / (NUM_BARS - 1); // 0 → 1
-  // Bell-curve envelope — tallest around 40-60%, shortest at edges
-  const envelope = Math.exp(-Math.pow((t - 0.5) * 2.4, 2));
-  // Fine deterministic detail
-  const detail =
-    Math.abs(Math.sin(i * 0.61 + 1.0)) * 0.40 +
-    Math.abs(Math.sin(i * 1.33 + 0.5)) * 0.28 +
-    Math.abs(Math.sin(i * 0.27 + 2.3)) * 0.18 +
-    Math.abs(Math.sin(i * 2.10 + 0.9)) * 0.14;
-  return Math.max(0.06, Math.min(1, envelope * (0.4 + detail * 0.6)));
+// Per-bar envelope: bell curve — tall in centre, short at edges
+const ENVELOPE: number[] = Array.from({ length: NUM_BARS }, (_, i) => {
+  const t = i / (NUM_BARS - 1);
+  // Bell curve envelope
+  const bell = Math.exp(-Math.pow((t - 0.5) * 2.6, 2));
+  // Small deterministic variation so adjacent bars aren't identical
+  const variation =
+    Math.abs(Math.sin(i * 0.61 + 1.0)) * 0.15 +
+    Math.abs(Math.sin(i * 1.33 + 0.5)) * 0.10;
+  return Math.max(0.08, Math.min(1, bell * (0.75 + variation)));
+});
+
+// Per-bar phase offset — each bar oscillates at a slightly different phase
+// so the motion ripples across the waveform like a wave
+const PHASE_OFFSET: number[] = Array.from({ length: NUM_BARS }, (_, i) => {
+  // Primary phase: smooth ripple left→right
+  return (i / NUM_BARS) * Math.PI * 4;
 });
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -107,19 +112,19 @@ function Waveform({
   onScrub,
 }: {
   playing: boolean;
-  progress: number; // 0→1, used only to show a subtle playhead marker
+  progress: number;
   onScrub: (pct: number) => void;
 }) {
   const canvasRef    = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const rafRef       = useRef<number>(0);
-  const phaseRef     = useRef<number>(0); // rolling wave phase
+  const timeRef      = useRef<number>(0); // animation time in seconds
   const lastTsRef    = useRef<number | null>(null);
   const playingRef   = useRef(playing);
 
   useEffect(() => { playingRef.current = playing; }, [playing]);
 
-  // Set up canvas size once on mount
+  // Size canvas on mount
   useEffect(() => {
     const canvas    = canvasRef.current;
     const container = containerRef.current;
@@ -134,15 +139,13 @@ function Waveform({
     if (ctx) ctx.scale(dpr, dpr);
   }, []);
 
-  // Animation loop
+  // Draw loop
   useEffect(() => {
     const canvas = canvasRef.current;
-    const container = containerRef.current;
-    if (!canvas || !container) return;
+    if (!canvas) return;
 
     const draw = (ts: number) => {
       rafRef.current = requestAnimationFrame(draw);
-
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
@@ -150,70 +153,66 @@ function Waveform({
       const W   = canvas.width  / dpr;
       const H   = canvas.height / dpr;
 
-      // Advance phase only while playing
+      // Advance animation time only while playing
       if (playingRef.current) {
         if (lastTsRef.current !== null) {
-          const dt = (ts - lastTsRef.current) / 1000; // seconds
-          // Wave rolls left→right: phase advances at ~0.8 cycles/sec
-          phaseRef.current += dt * 0.8;
+          timeRef.current += (ts - lastTsRef.current) / 1000;
         }
         lastTsRef.current = ts;
       } else {
         lastTsRef.current = null;
       }
 
+      const t   = timeRef.current;
+      const MAX_H = H - 4;
+      // Idle min height — bars always visible, just short
+      const IDLE_H = 0.06;
+
       ctx.clearRect(0, 0, W, H);
 
       const barW  = W / NUM_BARS;
       const gap   = 1.5;
       const fillW = Math.max(1, barW - gap);
-      const MAX_H = H - 2;
 
       for (let i = 0; i < NUM_BARS; i++) {
-        const t = i / (NUM_BARS - 1); // 0→1 position
+        const env = ENVELOPE[i];
+        const phi = PHASE_OFFSET[i];
 
-        // Base brightness from the bell-curve envelope:
-        // edges ~0.15 opacity, centre ~0.65 opacity
-        const baseBrightness = 0.15 + BAR_SHAPE[i] * 0.50;
+        let heightFactor: number;
 
-        let brightness = baseBrightness;
-
-        if (playingRef.current || phaseRef.current > 0) {
-          // Rolling sine wave: crests travel left → right
-          // Multiple overlapping waves for a richer shimmer
-          const wave1 = Math.sin(phaseRef.current * 2 * Math.PI - t * 6.0) * 0.5 + 0.5;
-          const wave2 = Math.sin(phaseRef.current * 2 * Math.PI * 1.3 - t * 9.0 + 1.2) * 0.5 + 0.5;
-          const shimmer = (wave1 * 0.65 + wave2 * 0.35);
-
-          // Blend: base dims when shimmer is low, brightens when high
-          brightness = baseBrightness * 0.4 + shimmer * 0.60;
+        if (playingRef.current || t > 0) {
+          // Each bar oscillates: primary wave + secondary harmonic for realism
+          // Speed: 2.5 cycles/sec gives natural audio-visualiser feel
+          const wave1 = Math.sin(t * 2.5 * Math.PI * 2 - phi) * 0.5 + 0.5;
+          const wave2 = Math.sin(t * 3.8 * Math.PI * 2 - phi * 1.3) * 0.5 + 0.5;
+          const wave3 = Math.sin(t * 1.2 * Math.PI * 2 - phi * 0.7) * 0.5 + 0.5;
+          // Blend waves — primary drives most of the motion
+          const osc = wave1 * 0.55 + wave2 * 0.25 + wave3 * 0.20;
+          // Apply envelope: centre bars reach full height, edges stay shorter
+          heightFactor = IDLE_H + (env - IDLE_H) * osc;
+        } else {
+          // Idle: flat low bars
+          heightFactor = IDLE_H * env;
         }
 
-        brightness = Math.max(0, Math.min(1, brightness));
+        const heightPx = Math.max(2, heightFactor * MAX_H);
 
-        const heightPx = Math.max(2, BAR_SHAPE[i] * MAX_H);
+        // Brightness follows height — taller = brighter
+        const brightness = 0.18 + heightFactor * 0.72;
 
-        ctx.fillStyle = `rgba(255,255,255,${brightness.toFixed(3)})`;
-        // Bottom-anchored
+        ctx.fillStyle = `rgba(255,255,255,${Math.min(1, brightness).toFixed(3)})`;
         ctx.fillRect(
           i * barW + gap / 2,
-          H - heightPx,
+          H - heightPx,   // bottom-anchored
           fillW,
           heightPx
         );
-      }
-
-      // Subtle playhead line
-      if (progress > 0 && progress < 1) {
-        const x = progress * W;
-        ctx.fillStyle = "rgba(255,255,255,0.25)";
-        ctx.fillRect(x - 1, 0, 2, H);
       }
     };
 
     rafRef.current = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [progress]);
+  }, []);
 
   return (
     <div
@@ -243,22 +242,18 @@ export default function AudioPlayer() {
   const [showTranscript, setShowTranscript] = useState(false);
   const [showQueue, setShowQueue]           = useState(false);
 
-  const elapsedRef   = useRef(0);
-  const startTsRef   = useRef<number | null>(null);
-  const rafRef       = useRef<number>(0);
-  const playingRef   = useRef(false);
+  const elapsedRef  = useRef(0);
+  const startTsRef  = useRef<number | null>(null);
+  const rafRef      = useRef<number>(0);
+  const playingRef  = useRef(false);
 
   const track = TRACKS[trackIndex];
   const total = track.duration;
 
-  // ── rAF clock ─────────────────────────────────────────────────────────────
-
   const tick = useCallback((ts: number) => {
     if (!playingRef.current) return;
     if (startTsRef.current === null) startTsRef.current = ts;
-
     const elapsed = elapsedRef.current + (ts - startTsRef.current) / 1000;
-
     if (elapsed >= total) {
       elapsedRef.current = 0;
       startTsRef.current = null;
@@ -267,7 +262,6 @@ export default function AudioPlayer() {
       setDisplayTime(0);
       return;
     }
-
     setDisplayTime(elapsed);
     rafRef.current = requestAnimationFrame(tick);
   }, [total]);
@@ -317,22 +311,13 @@ export default function AudioPlayer() {
 
   useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
 
-  const progress    = total > 0 ? displayTime / total : 0;
-  const remaining   = Math.max(0, total - Math.floor(displayTime));
+  const progress  = total > 0 ? displayTime / total : 0;
+  const remaining = Math.max(0, total - Math.floor(displayTime));
   const statusLabel = playing ? "Playing" : displayTime > 0 ? "Paused" : "Stopped";
 
-  // ── Render ────────────────────────────────────────────────────────────────
-
   return (
-    <div
-      style={{
-        fontFamily: "'IBM Plex Sans', sans-serif",
-        width: "100%",
-        maxWidth: 820,
-        margin: "0 auto",
-        userSelect: "none",
-      }}
-    >
+    <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", width: "100%", maxWidth: 820, margin: "0 auto", userSelect: "none" }}>
+
       {/* View Transcript tab */}
       <div style={{ display: "flex" }}>
         <button
@@ -356,14 +341,8 @@ export default function AudioPlayer() {
 
       {/* Player row */}
       <div style={{ display: "flex", alignItems: "stretch", gap: 10 }}>
+        <div style={{ flex: 1, minWidth: 0, background: "#171717", borderRadius: "0 12px 12px 12px", padding: "22px 24px 20px" }}>
 
-        {/* Main card */}
-        <div
-          style={{
-            flex: 1, minWidth: 0, background: "#171717",
-            borderRadius: "0 12px 12px 12px", padding: "22px 24px 20px",
-          }}
-        >
           {/* Meta */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
@@ -396,17 +375,11 @@ export default function AudioPlayer() {
 
           {/* Controls */}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <IconBtn onClick={prev} label="Previous track">
-              <SkipBack size={20} fill="white" strokeWidth={0} />
-            </IconBtn>
-            <IconBtn onClick={next} label="Next track">
-              <SkipForward size={20} fill="white" strokeWidth={0} />
-            </IconBtn>
+            <IconBtn onClick={prev} label="Previous track"><SkipBack size={20} fill="white" strokeWidth={0} /></IconBtn>
+            <IconBtn onClick={next} label="Next track"><SkipForward size={20} fill="white" strokeWidth={0} /></IconBtn>
             <div style={{ flex: 1 }} />
             <IconBtn onClick={playing ? pause : play} label={playing ? "Pause" : "Play"}>
-              {playing
-                ? <Pause size={20} fill="white" strokeWidth={0} />
-                : <Play  size={20} fill="white" strokeWidth={0} />}
+              {playing ? <Pause size={20} fill="white" strokeWidth={0} /> : <Play size={20} fill="white" strokeWidth={0} />}
             </IconBtn>
             <button
               onClick={stop}
@@ -421,8 +394,7 @@ export default function AudioPlayer() {
               onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "#f0f0f0")}
               onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "#ffffff")}
             >
-              Stop
-              <Square size={14} fill="#E8470A" color="#E8470A" strokeWidth={0} />
+              Stop <Square size={14} fill="#E8470A" color="#E8470A" strokeWidth={0} />
             </button>
           </div>
         </div>
@@ -431,12 +403,9 @@ export default function AudioPlayer() {
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <IconBtn onClick={() => setShowQueue((v) => !v)} label="Toggle queue">
             <ChevronDown size={20} strokeWidth={1.5}
-              style={{ transform: showQueue ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}
-            />
+              style={{ transform: showQueue ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
           </IconBtn>
-          <IconBtn label="More options">
-            <MoreVertical size={20} strokeWidth={1.5} />
-          </IconBtn>
+          <IconBtn label="More options"><MoreVertical size={20} strokeWidth={1.5} /></IconBtn>
         </div>
       </div>
 
@@ -444,11 +413,7 @@ export default function AudioPlayer() {
       {showTranscript && (
         <div style={{ background: "#171717", borderRadius: "0 0 12px 12px", padding: "20px 24px" }}>
           {TRANSCRIPT_LINES.map((line, i) => (
-            <p key={i} style={{
-              fontSize: 15, fontWeight: 400,
-              color: i % 2 === 0 ? "#ffffff" : "#BDBDBD",
-              lineHeight: 1.75, letterSpacing: "0.01em", margin: 0,
-            }}>{line}</p>
+            <p key={i} style={{ fontSize: 15, fontWeight: 400, color: i % 2 === 0 ? "#ffffff" : "#BDBDBD", lineHeight: 1.75, letterSpacing: "0.01em", margin: 0 }}>{line}</p>
           ))}
         </div>
       )}
@@ -456,19 +421,11 @@ export default function AudioPlayer() {
       {/* Queue */}
       {showQueue && (
         <div style={{ background: "#171717", borderRadius: "0 0 12px 0", marginTop: 2, marginRight: 58, padding: "16px 24px" }}>
-          <p style={{ fontSize: 11, fontWeight: 600, color: "#BDBDBD", letterSpacing: "0.12em", textTransform: "uppercase", margin: "0 0 12px" }}>
-            Queue
-          </p>
+          <p style={{ fontSize: 11, fontWeight: 600, color: "#BDBDBD", letterSpacing: "0.12em", textTransform: "uppercase", margin: "0 0 12px" }}>Queue</p>
           {TRACKS.map((t, i) => (
             <div
-              key={t.id}
-              onClick={() => skipTo(i)}
-              style={{
-                display: "flex", alignItems: "center", gap: 14,
-                padding: "9px 10px", borderRadius: 8, cursor: "pointer",
-                background: i === trackIndex ? "#1C1C1C" : "transparent",
-                transition: "background 0.15s",
-              }}
+              key={t.id} onClick={() => skipTo(i)}
+              style={{ display: "flex", alignItems: "center", gap: 14, padding: "9px 10px", borderRadius: 8, cursor: "pointer", background: i === trackIndex ? "#1C1C1C" : "transparent", transition: "background 0.15s" }}
               onMouseEnter={(e) => { if (i !== trackIndex) (e.currentTarget as HTMLDivElement).style.background = "#1a1a1a"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = i === trackIndex ? "#1C1C1C" : "transparent"; }}
             >
