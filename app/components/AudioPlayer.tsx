@@ -642,46 +642,54 @@ function SideMenu({
   );
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", alignItems:"center" }}>
+    // Outer wrapper — fixed width, positioned relative so absolute children overflow down freely
+    <div style={{ position: "relative", width: 48, flexShrink: 0 }}>
 
-      {/* Chevron — queue toggle, always on top */}
-      <div style={{ marginBottom: 8 }}>
+      {/* Fixed buttons — always at top, never move */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {/* Chevron */}
         <IconBtn onClick={() => { setShowQueue(!showQueue); }} label="Toggle queue" playSound={playTock}>
-          <ChevronDown size={20} strokeWidth={1.5} style={{ transform:showQueue?"rotate(180deg)":"rotate(0deg)", transition:"transform 0.45s cubic-bezier(0.34,1.56,0.64,1)" }} />
+          <ChevronDown size={20} strokeWidth={1.5} style={{ transform: showQueue ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.45s cubic-bezier(0.34,1.56,0.64,1)" }} />
+        </IconBtn>
+
+        {/* ⋮ More */}
+        <IconBtn onClick={handleToggleMenu} label="More options" active={menuOpen}>
+          <MoreVertical size={20} strokeWidth={1.5} style={{ transform: menuOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.35s cubic-bezier(0.34,1.56,0.64,1)" }} />
         </IconBtn>
       </div>
 
-      {/* ⋮ More button — fixed below chevron */}
-      <IconBtn onClick={handleToggleMenu} label="More options" active={menuOpen}>
-        <MoreVertical size={20} strokeWidth={1.5} style={{ transform: menuOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.35s cubic-bezier(0.34,1.56,0.64,1)" }} />
-      </IconBtn>
+      {/* Expanding items — absolutely positioned below ⋮, overflow freely downward */}
+      <div style={{ position: "absolute", top: 48 + 8 + 48 + 8, left: 0, width: 48, display: "flex", flexDirection: "column", gap: 0 }}>
 
-      {/* Items cascade DOWN from ⋮ */}
-      <AnimItem spring={sp1}>
-        <IconBtn onClick={handleToggleSpeed} label="Playback speed" playSound={playTock} active={speedOpen}>
-          <Gauge size={18} strokeWidth={1.8} />
-        </IconBtn>
-      </AnimItem>
-
-      {/* Speed sub-items */}
-      {SPEEDS.map((sp, i) => (
-        <AnimItem key={sp} spring={speedSprings[i]}>
-          <SpeedBtn speed={sp} active={speed === sp} onClick={() => { setSpeed(sp); playTock(); }} />
+        {/* Speed */}
+        <AnimItem spring={sp1}>
+          <IconBtn onClick={handleToggleSpeed} label="Playback speed" playSound={playTock} active={speedOpen}>
+            <Gauge size={18} strokeWidth={1.8} />
+          </IconBtn>
         </AnimItem>
-      ))}
 
-      <AnimItem spring={sp2}>
-        <IconBtn onClick={() => { onBookmark(); playTock(); closeMenu(); setMenuOpen(false); }} label="Bookmark" playSound={undefined}>
-          <Bookmark size={18} strokeWidth={1.8} />
-        </IconBtn>
-      </AnimItem>
+        {/* Speed sub-items */}
+        {SPEEDS.map((sp, i) => (
+          <AnimItem key={sp} spring={speedSprings[i]}>
+            <SpeedBtn speed={sp} active={speed === sp} onClick={() => { setSpeed(sp); playTock(); }} />
+          </AnimItem>
+        ))}
 
-      <AnimItem spring={sp3}>
-        <IconBtn onClick={() => { onShare(); playTock(); closeMenu(); setMenuOpen(false); }} label="Share" playSound={undefined}>
-          <Share2 size={18} strokeWidth={1.8} />
-        </IconBtn>
-      </AnimItem>
+        {/* Bookmark */}
+        <AnimItem spring={sp2}>
+          <IconBtn onClick={() => { onBookmark(); playTock(); closeMenu(); setMenuOpen(false); }} label="Bookmark" playSound={undefined}>
+            <Bookmark size={18} strokeWidth={1.8} />
+          </IconBtn>
+        </AnimItem>
 
+        {/* Share */}
+        <AnimItem spring={sp3}>
+          <IconBtn onClick={() => { onShare(); playTock(); closeMenu(); setMenuOpen(false); }} label="Share" playSound={undefined}>
+            <Share2 size={18} strokeWidth={1.8} />
+          </IconBtn>
+        </AnimItem>
+
+      </div>
     </div>
   );
 }
@@ -833,7 +841,7 @@ export default function AudioPlayer() {
         </div>
 
         {/* Player row */}
-        <div style={{ display:"flex", alignItems:"stretch", gap:10 }}>
+        <div style={{ display:"flex", alignItems:"stretch", gap:10, overflow:"visible" }}>
           <div style={{ flex:1, minWidth:0, background:"#171717", borderRadius:"0 12px 12px 12px", padding:"22px 24px 20px" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
               <div style={{ display:"flex", flexDirection:"column", gap:7, overflow:"hidden", flex:1, marginRight:16 }}>
