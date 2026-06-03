@@ -2,7 +2,16 @@ import AudioPlayer from "./components/AudioPlayer";
 
 export default function Home() {
   return (
-    <main className="min-h-screen flex items-center justify-center px-4">
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#111111",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "2rem",
+      }}
+    >
       <AudioPlayer />
     </main>
   );

@@ -1,208 +1,123 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import {
+  SkipBack,
+  SkipForward,
+  Pause,
+  Play,
+  Square,
+  ChevronDown,
+  MoreVertical,
+  ScrollText,
+} from "lucide-react";
+
+// ─── Data ────────────────────────────────────────────────────────────────────
 
 interface Track {
   id: number;
   title: string;
-  artist: string;
-  duration: number;
+  duration: number; // seconds
 }
 
 const TRACKS: Track[] = [
-  { id: 1, title: "Pray for Me", artist: "Theophilus Sunday", duration: 321 },
-  { id: 2, title: "Glorious", artist: "Theophilus Sunday", duration: 274 },
-  { id: 3, title: "Way Maker", artist: "Sinach", duration: 348 },
-  { id: 4, title: "Hallelujah Challenge", artist: "Nathaniel Bassey", duration: 412 },
-  { id: 5, title: "All Things New", artist: "Theophilus Sunday", duration: 289 },
+  { id: 1, title: "Pray for me - Theophilus Sunday", duration: 321 },
+  { id: 2, title: "Glorious - Theophilus Sunday",    duration: 274 },
+  { id: 3, title: "Way Maker - Sinach",              duration: 348 },
+  { id: 4, title: "Hallelujah Challenge - N. Bassey", duration: 412 },
+  { id: 5, title: "All Things New - Theophilus Sunday", duration: 289 },
 ];
 
-const TRANSCRIPT = [
-  { text: "Lord, I need you now, more than ever before...", highlight: true },
-  { text: "When the storms of life are raging, stand by me.", highlight: false },
-  { text: "When the world is tossing me like a ship upon the sea...", highlight: true },
-  { text: "Thou who rulest wind and water, stand by me.", highlight: false },
+const TRANSCRIPT_LINES = [
+  "Lord, I need you now, more than ever before...",
+  "When the storms of life are raging, stand by me.",
+  "When the world is tossing me like a ship upon the sea...",
+  "Thou who rulest wind and water, stand by me.",
 ];
 
-const WAVE_HEIGHTS: number[] = Array.from({ length: 80 }, (_, i) => {
-  const base =
-    Math.sin(i * 0.18) * 0.3 +
-    Math.sin(i * 0.43) * 0.25 +
-    Math.sin(i * 0.11) * 0.2;
-  return 0.15 + Math.abs(base) + (((i * 7 + 13) % 17) / 17) * 0.2;
+// ─── Waveform data ────────────────────────────────────────────────────────────
+// Pre-computed, deterministic heights that create the mountain-bell-curve shape
+// visible in the design: low at edges, peaks in the middle third.
+const NUM_BARS = 90;
+const WAVE_HEIGHTS: number[] = Array.from({ length: NUM_BARS }, (_, i) => {
+  const t = i / (NUM_BARS - 1); // 0 → 1
+  // Bell-curve envelope
+  const envelope = Math.exp(-Math.pow((t - 0.5) * 2.6, 2));
+  // Fine detail — pseudo-random but deterministic
+  const detail =
+    Math.abs(Math.sin(i * 0.47 + 1.2)) * 0.35 +
+    Math.abs(Math.sin(i * 1.1 + 0.7)) * 0.25 +
+    Math.abs(Math.sin(i * 0.19 + 3.1)) * 0.2;
+  const raw = envelope * (0.45 + detail * 0.55);
+  return Math.max(0.03, Math.min(1, raw));
 });
-const MAX_H = Math.max(...WAVE_HEIGHTS);
 
-function formatTime(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function formatTime(s: number): string {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
 }
 
-// ── Icon components ───────────────────────────────────────────────
-const iconBase = {
-  width: 16,
-  height: 16,
-  viewBox: "0 0 24 24",
-  fill: "none" as const,
-  stroke: "currentColor",
-  strokeWidth: 2,
-  strokeLinecap: "round" as const,
-  strokeLinejoin: "round" as const,
-};
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
-const NoteIcon = () => (
-  <svg {...iconBase}>
-    <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
-    <rect x="9" y="3" width="6" height="4" rx="2" />
-    <line x1="9" y1="12" x2="15" y2="12" />
-    <line x1="9" y1="16" x2="13" y2="16" />
-  </svg>
-);
-
-const PlayIcon = () => (
-  <svg {...iconBase}>
-    <polygon points="5 3 19 12 5 21 5 3" fill="currentColor" stroke="none" />
-  </svg>
-);
-
-const PauseIcon = () => (
-  <svg {...iconBase}>
-    <rect x="6" y="4" width="4" height="16" fill="currentColor" stroke="none" />
-    <rect x="14" y="4" width="4" height="16" fill="currentColor" stroke="none" />
-  </svg>
-);
-
-const SkipBackIcon = () => (
-  <svg {...iconBase}>
-    <polygon points="19 20 9 12 19 4 19 20" />
-    <line x1="5" y1="19" x2="5" y2="5" />
-  </svg>
-);
-
-const SkipFwdIcon = () => (
-  <svg {...iconBase}>
-    <polygon points="5 4 15 12 5 20 5 4" />
-    <line x1="19" y1="5" x2="19" y2="19" />
-  </svg>
-);
-
-const QueueIcon = () => (
-  <svg {...iconBase}>
-    <line x1="8" y1="6" x2="21" y2="6" />
-    <line x1="8" y1="12" x2="21" y2="12" />
-    <line x1="8" y1="18" x2="21" y2="18" />
-    <circle cx="3" cy="6" r="1" fill="currentColor" stroke="none" />
-    <circle cx="3" cy="12" r="1" fill="currentColor" stroke="none" />
-    <circle cx="3" cy="18" r="1" fill="currentColor" stroke="none" />
-  </svg>
-);
-
-const DotsIcon = () => (
-  <svg {...iconBase}>
-    <circle cx="12" cy="5" r="1" fill="currentColor" stroke="none" />
-    <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
-    <circle cx="12" cy="19" r="1" fill="currentColor" stroke="none" />
-  </svg>
-);
-
-const ChevronIcon = ({ up }: { up: boolean }) => (
-  <svg {...iconBase} style={{ transform: up ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>
-    <polyline points="6 9 12 15 18 9" />
-  </svg>
-);
-
-// ── Sub-components ────────────────────────────────────────────────
-interface CtrlBtnProps {
+/** Dark square icon button — matches the design's #1C1C1C rounded squares */
+function IconBtn({
+  onClick,
+  label,
+  children,
+}: {
   onClick?: () => void;
   label: string;
   children: React.ReactNode;
-}
-
-function CtrlBtn({ onClick, label, children }: CtrlBtnProps) {
+}) {
   return (
     <button
       onClick={onClick}
       aria-label={label}
       style={{
-        width: 36,
-        height: 36,
-        borderRadius: 8,
-        background: "#2a2a2a",
-        border: "0.5px solid #3a3a3a",
-        color: "#ccc",
+        width: 48,
+        height: 48,
+        borderRadius: 10,
+        background: "#1C1C1C",
+        border: "none",
+        color: "#ffffff",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         cursor: "pointer",
-        transition: "background 0.15s, color 0.15s",
+        flexShrink: 0,
+        transition: "background 0.15s",
       }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLButtonElement).style.background = "#333";
-        (e.currentTarget as HTMLButtonElement).style.color = "#fff";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLButtonElement).style.background = "#2a2a2a";
-        (e.currentTarget as HTMLButtonElement).style.color = "#ccc";
-      }}
+      onMouseEnter={(e) =>
+        ((e.currentTarget as HTMLButtonElement).style.background = "#252525")
+      }
+      onMouseLeave={(e) =>
+        ((e.currentTarget as HTMLButtonElement).style.background = "#1C1C1C")
+      }
     >
       {children}
     </button>
   );
 }
 
-interface SideBtnProps {
-  onClick?: () => void;
-  label: string;
-  active?: boolean;
-  children: React.ReactNode;
-}
+// ─── Main component ───────────────────────────────────────────────────────────
 
-function SideBtn({ onClick, label, active = false, children }: SideBtnProps) {
-  return (
-    <button
-      onClick={onClick}
-      aria-label={label}
-      style={{
-        width: 36,
-        height: 36,
-        borderRadius: 8,
-        background: "#2a2a2a",
-        border: `0.5px solid ${active ? "#e84c2f66" : "#3a3a3a"}`,
-        color: active ? "#e84c2f" : "#aaa",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        cursor: "pointer",
-        transition: "background 0.15s, color 0.15s, border-color 0.15s",
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLButtonElement).style.background = "#333";
-        if (!active) (e.currentTarget as HTMLButtonElement).style.color = "#fff";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLButtonElement).style.background = "#2a2a2a";
-        if (!active) (e.currentTarget as HTMLButtonElement).style.color = "#aaa";
-      }}
-    >
-      {children}
-    </button>
-  );
-}
-
-// ── Main component ────────────────────────────────────────────────
 export default function AudioPlayer() {
   const [trackIndex, setTrackIndex] = useState(0);
   const [current, setCurrent] = useState(0);
-  const [playing, setPlaying] = useState(false);
+  const [playing, setPlaying]   = useState(false);
   const [showTranscript, setShowTranscript] = useState(false);
-  const [showQueue, setShowQueue] = useState(false);
+  const [showQueue, setShowQueue]           = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const track = TRACKS[trackIndex];
   const total = track.duration;
 
-  const stopInterval = useCallback(() => {
+  // ── Playback engine ────────────────────────────────────────────────────────
+
+  const clearTick = useCallback(() => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
@@ -225,260 +140,353 @@ export default function AudioPlayer() {
 
   const pause = useCallback(() => {
     setPlaying(false);
-    stopInterval();
-  }, [stopInterval]);
+    clearTick();
+  }, [clearTick]);
 
   const stop = useCallback(() => {
     setPlaying(false);
-    stopInterval();
+    clearTick();
     setCurrent(0);
-  }, [stopInterval]);
+  }, [clearTick]);
 
   const skipTo = useCallback(
-    (index: number) => {
+    (idx: number) => {
       stop();
-      setTrackIndex(index);
-      setCurrent(0);
+      setTrackIndex(idx);
     },
     [stop]
   );
 
-  const prev = useCallback(() => {
-    skipTo((trackIndex - 1 + TRACKS.length) % TRACKS.length);
-  }, [trackIndex, skipTo]);
+  const prev = () => skipTo((trackIndex - 1 + TRACKS.length) % TRACKS.length);
+  const next = () => skipTo((trackIndex + 1) % TRACKS.length);
 
-  const next = useCallback(() => {
-    skipTo((trackIndex + 1) % TRACKS.length);
-  }, [trackIndex, skipTo]);
+  const scrub = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pct  = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    setCurrent(Math.round(pct * total));
+  };
 
-  const scrub = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-      setCurrent(Math.round(pct * total));
-    },
-    [total]
-  );
+  useEffect(() => () => clearTick(), [clearTick]);
 
-  useEffect(() => () => stopInterval(), [stopInterval]);
+  // ── Derived ────────────────────────────────────────────────────────────────
 
-  const progress = current / total;
+  const progress    = total > 0 ? current / total : 0;
   const statusLabel = playing ? "Playing" : current > 0 ? "Paused" : "Stopped";
 
-  return (
-    <div style={{ fontFamily: "'Syne', sans-serif", maxWidth: 620, margin: "0 auto", padding: "2rem 1rem" }}>
+  // ─── Render ────────────────────────────────────────────────────────────────
 
-      {/* Transcript tab */}
+  return (
+    <div
+      style={{
+        fontFamily: "'IBM Plex Sans', sans-serif",
+        width: "100%",
+        maxWidth: 780,
+        margin: "0 auto",
+        userSelect: "none",
+      }}
+    >
+      {/* ── View Transcript tab ─────────────────────────────────────────────── */}
       <div style={{ display: "flex", alignItems: "flex-end" }}>
         <button
           onClick={() => setShowTranscript((v) => !v)}
           aria-expanded={showTranscript}
           style={{
-            background: "#1e1e1e",
-            border: "0.5px solid #3a3a3a",
-            borderBottom: "none",
-            borderRadius: "8px 8px 0 0",
-            padding: "8px 16px",
-            fontSize: 13,
-            color: showTranscript ? "#f0f0f0" : "#888",
             display: "flex",
             alignItems: "center",
-            gap: 8,
+            gap: 10,
+            padding: "12px 20px",
+            background: "#1C1C1C",
+            border: "none",
+            borderRadius: "12px 12px 0 0",
+            color: "#ffffff",
+            fontFamily: "'IBM Plex Sans', sans-serif",
+            fontSize: 15,
+            fontWeight: 400,
+            letterSpacing: "0.01em",
             cursor: "pointer",
-            transition: "color 0.2s",
-            fontFamily: "'Syne', sans-serif",
+            whiteSpace: "nowrap",
+            transition: "background 0.15s",
           }}
+          onMouseEnter={(e) =>
+            ((e.currentTarget as HTMLButtonElement).style.background = "#242424")
+          }
+          onMouseLeave={(e) =>
+            ((e.currentTarget as HTMLButtonElement).style.background = "#1C1C1C")
+          }
         >
-          <NoteIcon />
+          <ScrollText size={18} strokeWidth={1.5} />
           View Transcript
         </button>
       </div>
 
-      {/* Player + side buttons */}
-      <div style={{ display: "flex", alignItems: "stretch" }}>
+      {/* ── Player row (card + side buttons) ────────────────────────────────── */}
+      <div style={{ display: "flex", alignItems: "stretch", gap: 10 }}>
 
-        {/* Main card */}
+        {/* ── Main card ───────────────────────────────────────────────────── */}
         <div
           style={{
-            background: "#1a1a1a",
-            border: "0.5px solid #3a3a3a",
-            borderRadius: "0 12px 12px 12px",
-            padding: "20px 24px 16px",
             flex: 1,
             minWidth: 0,
+            background: "#171717",
+            borderRadius: "0 12px 12px 12px",
+            padding: "22px 24px 20px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 0,
           }}
         >
-          {/* Meta row */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-            <div>
-              <p style={{ fontSize: 15, fontWeight: 600, color: "#f0f0f0", margin: "0 0 2px" }}>{track.title}</p>
-              <p style={{ fontSize: 12, color: "#666", margin: "0 0 6px" }}>{track.artist}</p>
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          {/* Meta row: title + timer */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              marginBottom: 8,
+            }}
+          >
+            {/* Left: title + status */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <span
+                style={{
+                  fontSize: 17,
+                  fontWeight: 400,
+                  color: "#ffffff",
+                  letterSpacing: "-0.01em",
+                  lineHeight: 1.2,
+                }}
+              >
+                {track.title}
+              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                {/* Orange dot */}
                 <span
-                  className="pulse-dot"
                   style={{
-                    width: 7,
-                    height: 7,
+                    width: 8,
+                    height: 8,
                     borderRadius: "50%",
-                    background: "#e84c2f",
+                    background: "#E8470A",
                     display: "inline-block",
-                    animationPlayState: playing ? "running" : "paused",
+                    flexShrink: 0,
+                    animation: playing
+                      ? "pulseDot 1.6s ease-in-out infinite"
+                      : "none",
                   }}
                 />
-                <span style={{ fontSize: 12, color: "#888" }}>{statusLabel}</span>
+                <span
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 400,
+                    color: "#BDBDBD",
+                    letterSpacing: "0.01em",
+                  }}
+                >
+                  {statusLabel}
+                </span>
               </div>
             </div>
-            <div
+
+            {/* Right: big timer */}
+            <span
               style={{
-                fontFamily: "'DM Mono', monospace",
-                fontSize: 26,
-                fontWeight: 500,
-                color: "#f0f0f0",
+                fontSize: 48,
+                fontWeight: 600,
+                color: "#ffffff",
                 letterSpacing: "0.04em",
-                minWidth: 80,
-                textAlign: "right",
+                lineHeight: 1,
+                fontVariantNumeric: "tabular-nums",
+                fontFamily: "'IBM Plex Sans', sans-serif",
               }}
             >
               {formatTime(total - current)}
-            </div>
+            </span>
           </div>
 
-          {/* Waveform */}
+          {/* ── Waveform ──────────────────────────────────────────────────── */}
           <div
             onClick={scrub}
             role="progressbar"
             aria-valuenow={current}
             aria-valuemin={0}
             aria-valuemax={total}
-            aria-label="Audio progress"
+            aria-label="Scrub audio"
             style={{
-              height: 72,
+              height: 120,
               display: "flex",
-              alignItems: "flex-end",
-              gap: 2,
-              overflow: "hidden",
-              marginBottom: 16,
+              alignItems: "center",
+              gap: 1.5,
               cursor: "pointer",
+              margin: "14px 0 18px",
+              overflow: "hidden",
             }}
           >
             {WAVE_HEIGHTS.map((h, i) => {
-              const heightPx = Math.round((h / MAX_H) * 68);
-              const isPast = (i / WAVE_HEIGHTS.length) < progress;
+              const barPct  = i / NUM_BARS;
+              const isPast  = barPct < progress;
+              // Mirror the bar: taller in center via the envelope already baked in
+              const heightPct = h; // 0..1
+              const heightPx  = Math.round(heightPct * 112);
+
+              // Brightness gradient: bars near edges are darker, centre is brighter
+              // Use the envelope value directly for opacity
+              const brightness = 0.15 + h * 0.85; // 0.15 → 1.0
+
+              const color = isPast
+                ? `rgba(232,71,10,${0.6 + h * 0.4})`
+                : `rgba(255,255,255,${brightness * 0.85})`;
+
               return (
                 <div
                   key={i}
                   style={{
                     flex: 1,
-                    minWidth: 3,
+                    minWidth: 2,
+                    maxWidth: 4,
                     height: heightPx,
-                    borderRadius: "1px 1px 0 0",
-                    background: isPast
-                      ? "#e84c2f"
-                      : `rgba(255,255,255,${playing ? 0.18 + (i % 3) * 0.06 : 0.12})`,
-                    transition: "background 0.1s",
+                    background: color,
+                    borderRadius: 0,
+                    flexShrink: 0,
                   }}
                 />
               );
             })}
           </div>
 
-          {/* Controls */}
+          {/* ── Controls row ──────────────────────────────────────────────── */}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <CtrlBtn onClick={prev} label="Previous track"><SkipBackIcon /></CtrlBtn>
-            <CtrlBtn onClick={next} label="Next track"><SkipFwdIcon /></CtrlBtn>
+            <IconBtn onClick={prev} label="Previous track">
+              <SkipBack size={20} fill="white" strokeWidth={0} />
+            </IconBtn>
+
+            <IconBtn onClick={next} label="Next track">
+              <SkipForward size={20} fill="white" strokeWidth={0} />
+            </IconBtn>
+
+            {/* Spacer */}
             <div style={{ flex: 1 }} />
-            <CtrlBtn onClick={playing ? pause : play} label={playing ? "Pause" : "Play"}>
-              {playing ? <PauseIcon /> : <PlayIcon />}
-            </CtrlBtn>
+
+            {/* Pause / Play */}
+            <IconBtn onClick={playing ? pause : play} label={playing ? "Pause" : "Play"}>
+              {playing ? (
+                <Pause size={20} fill="white" strokeWidth={0} />
+              ) : (
+                <Play size={20} fill="white" strokeWidth={0} />
+              )}
+            </IconBtn>
+
+            {/* Stop button — white pill */}
             <button
               onClick={stop}
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 8,
-                padding: "0 16px",
-                height: 36,
-                borderRadius: 8,
-                background: "#fff",
+                gap: 10,
+                padding: "0 20px",
+                height: 48,
+                borderRadius: 10,
+                background: "#ffffff",
                 border: "none",
-                color: "#111",
-                fontSize: 13,
+                color: "#111111",
+                fontFamily: "'IBM Plex Sans', sans-serif",
+                fontSize: 15,
                 fontWeight: 600,
+                letterSpacing: "0.01em",
                 cursor: "pointer",
-                fontFamily: "'Syne', sans-serif",
+                flexShrink: 0,
+                transition: "background 0.15s",
               }}
+              onMouseEnter={(e) =>
+                ((e.currentTarget as HTMLButtonElement).style.background = "#f0f0f0")
+              }
+              onMouseLeave={(e) =>
+                ((e.currentTarget as HTMLButtonElement).style.background = "#ffffff")
+              }
             >
               Stop
-              <span style={{ width: 10, height: 10, background: "#e84c2f", borderRadius: 2, display: "inline-block" }} />
+              <Square size={14} fill="#E8470A" color="#E8470A" strokeWidth={0} />
             </button>
           </div>
         </div>
 
-        {/* Side buttons */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingLeft: 8, justifyContent: "center" }}>
-          <SideBtn onClick={() => setShowQueue((v) => !v)} label="Toggle queue" active={showQueue}>
-            <QueueIcon />
-          </SideBtn>
-          <SideBtn label="Collapse" onClick={() => setShowTranscript((v) => !v)}>
-            <ChevronIcon up={showTranscript} />
-          </SideBtn>
-          <SideBtn label="More options">
-            <DotsIcon />
-          </SideBtn>
+        {/* ── Side buttons ──────────────────────────────────────────────────── */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+            justifyContent: "flex-start",
+            paddingTop: 0,
+          }}
+        >
+          <IconBtn
+            onClick={() => setShowQueue((v) => !v)}
+            label="Collapse / expand"
+          >
+            <ChevronDown
+              size={20}
+              strokeWidth={1.5}
+              style={{
+                transform: showQueue ? "rotate(180deg)" : "rotate(0deg)",
+                transition: "transform 0.2s",
+              }}
+            />
+          </IconBtn>
+
+          <IconBtn label="More options">
+            <MoreVertical size={20} strokeWidth={1.5} />
+          </IconBtn>
         </div>
       </div>
 
-      {/* Transcript panel */}
+      {/* ── Transcript panel ──────────────────────────────────────────────────── */}
       {showTranscript && (
         <div
           style={{
-            background: "#1a1a1a",
-            border: "0.5px solid #3a3a3a",
-            borderTop: "none",
-            borderRadius: "0 0 12px 0",
-            padding: "16px 24px",
+            background: "#171717",
+            borderRadius: "0 0 12px 12px",
+            padding: "20px 24px",
+            marginTop: -1,
           }}
         >
-          {TRANSCRIPT.map((line, i) => (
+          {TRANSCRIPT_LINES.map((line, i) => (
             <p
               key={i}
               style={{
-                fontSize: 13,
-                lineHeight: 1.7,
-                margin: "0 0 4px",
-                color: line.highlight ? "#e0e0e0" : "#777",
-                fontFamily: "'Syne', sans-serif",
+                fontSize: 15,
+                fontWeight: 400,
+                color: i % 2 === 0 ? "#ffffff" : "#BDBDBD",
+                lineHeight: 1.75,
+                letterSpacing: "0.01em",
+                margin: 0,
               }}
             >
-              {line.text}
+              {line}
             </p>
           ))}
         </div>
       )}
 
-      {/* Queue panel */}
+      {/* ── Queue panel ───────────────────────────────────────────────────────── */}
       {showQueue && (
         <div
           style={{
-            background: "#161616",
-            border: "0.5px solid #3a3a3a",
-            borderTop: "none",
-            borderRadius: "0 0 0 12px",
-            padding: "12px 16px",
-            marginRight: 44,
+            background: "#171717",
+            borderRadius: "0 0 12px 0",
+            marginTop: 2,
+            marginRight: 58,
+            padding: "16px 24px",
           }}
         >
           <p
             style={{
               fontSize: 11,
               fontWeight: 600,
-              color: "#555",
-              letterSpacing: "0.1em",
+              color: "#BDBDBD",
+              letterSpacing: "0.12em",
               textTransform: "uppercase",
-              margin: "0 0 8px",
+              marginBottom: 12,
             }}
           >
-            Up next
+            Queue
           </p>
           {TRACKS.map((t, i) => (
             <div
@@ -487,48 +495,74 @@ export default function AudioPlayer() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 12,
-                padding: "8px 10px",
+                gap: 14,
+                padding: "9px 10px",
                 borderRadius: 8,
                 cursor: "pointer",
-                background: i === trackIndex ? "#2a2a2a" : "transparent",
+                background: i === trackIndex ? "#1C1C1C" : "transparent",
                 transition: "background 0.15s",
               }}
               onMouseEnter={(e) => {
                 if (i !== trackIndex)
-                  (e.currentTarget as HTMLDivElement).style.background = "#222";
+                  (e.currentTarget as HTMLDivElement).style.background = "#1a1a1a";
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLDivElement).style.background =
-                  i === trackIndex ? "#2a2a2a" : "transparent";
+                  i === trackIndex ? "#1C1C1C" : "transparent";
               }}
             >
-              <div style={{ width: 20, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              {/* Number or playing dot */}
+              <div
+                style={{
+                  width: 18,
+                  textAlign: "center",
+                  flexShrink: 0,
+                  fontSize: 13,
+                  color: "#BDBDBD",
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
                 {i === trackIndex && playing ? (
                   <span
-                    className="pulse-dot"
-                    style={{ width: 6, height: 6, borderRadius: "50%", background: "#e84c2f", display: "inline-block" }}
+                    style={{
+                      width: 7,
+                      height: 7,
+                      borderRadius: "50%",
+                      background: "#E8470A",
+                      display: "inline-block",
+                      animation: "pulseDot 1.6s ease-in-out infinite",
+                    }}
                   />
                 ) : (
-                  <span style={{ fontSize: 12, color: "#555" }}>{i + 1}</span>
+                  i + 1
                 )}
               </div>
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
-                <span
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: i === trackIndex ? "#f0f0f0" : "#ccc",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {t.title}
-                </span>
-                <span style={{ fontSize: 11, color: "#555" }}>{t.artist}</span>
-              </div>
-              <span style={{ fontSize: 12, color: "#555", fontFamily: "'DM Mono', monospace", flexShrink: 0 }}>
+
+              {/* Title */}
+              <span
+                style={{
+                  flex: 1,
+                  fontSize: 14,
+                  fontWeight: i === trackIndex ? 500 : 400,
+                  color: i === trackIndex ? "#ffffff" : "#BDBDBD",
+                  letterSpacing: "0.005em",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {t.title}
+              </span>
+
+              {/* Duration */}
+              <span
+                style={{
+                  fontSize: 13,
+                  color: "#BDBDBD",
+                  fontVariantNumeric: "tabular-nums",
+                  flexShrink: 0,
+                }}
+              >
                 {formatTime(t.duration)}
               </span>
             </div>
