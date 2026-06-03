@@ -384,7 +384,7 @@ export default function AudioPlayer() {
             onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "#242424")}
           >
             <ScrollText size={17} strokeWidth={1.5} />
-            View Transcript
+            View Lyrics
           </button>
         </div>
 
