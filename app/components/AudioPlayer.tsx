@@ -35,9 +35,7 @@ const TRANSCRIPT_LINES = [
   "Thou who rulest wind and water, stand by me.",
 ];
 
-// ─── Bar shape — FIXED, never changes ────────────────────────────────────────
-// These are the static heights of each bar. They never move.
-// Bell curve envelope, tall in centre, shorter at edges.
+// ─── Waveform shape ───────────────────────────────────────────────────────────
 
 const NUM_BARS = 130;
 
@@ -59,24 +57,169 @@ function formatTime(s: number): string {
   return `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
 }
 
+// ─── Click sound — soft low tock via Web Audio API ───────────────────────────
+
+function useClickSound() {
+  const ctxRef = useRef<AudioContext | null>(null);
+
+  const getCtx = useCallback(() => {
+    if (!ctxRef.current) {
+      ctxRef.current = new (window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext })
+          .webkitAudioContext)();
+    }
+    return ctxRef.current;
+  }, []);
+
+  const playTock = useCallback(() => {
+    try {
+      const ctx     = getCtx();
+      const now     = ctx.currentTime;
+
+      // Body — low sine thud
+      const osc     = ctx.createOscillator();
+      const gainOsc = ctx.createGain();
+      osc.type      = "sine";
+      osc.frequency.setValueAtTime(180, now);
+      osc.frequency.exponentialRampToValueAtTime(80, now + 0.08);
+      gainOsc.gain.setValueAtTime(0.35, now);
+      gainOsc.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+      osc.connect(gainOsc);
+      gainOsc.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.12);
+
+      // Click transient — short noise burst for the 'tock' attack
+      const bufSize   = ctx.sampleRate * 0.02;
+      const buffer    = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+      const data      = buffer.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1);
+      const noise     = ctx.createBufferSource();
+      noise.buffer    = buffer;
+      const gainNoise = ctx.createGain();
+      const filter    = ctx.createBiquadFilter();
+      filter.type     = "bandpass";
+      filter.frequency.value = 1200;
+      filter.Q.value  = 0.8;
+      gainNoise.gain.setValueAtTime(0.12, now);
+      gainNoise.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
+      noise.connect(filter);
+      filter.connect(gainNoise);
+      gainNoise.connect(ctx.destination);
+      noise.start(now);
+      noise.stop(now + 0.02);
+    } catch {
+      // Silently ignore — audio not critical
+    }
+  }, [getCtx]);
+
+  return playTock;
+}
+
+// ─── Spring animation hook ────────────────────────────────────────────────────
+// Drives a 0→1 value with a spring physics feel (Apple-like).
+
+function useSpring(open: boolean, config = { stiffness: 280, damping: 26, mass: 1 }) {
+  const [value, setValue] = useState(open ? 1 : 0);
+  const rafRef   = useRef<number>(0);
+  const stateRef = useRef({ pos: open ? 1 : 0, vel: 0 });
+
+  useEffect(() => {
+    const target = open ? 1 : 0;
+    const { stiffness, damping, mass } = config;
+
+    const step = () => {
+      const s   = stateRef.current;
+      const F   = -stiffness * (s.pos - target) - damping * s.vel;
+      s.vel    += (F / mass) * (1 / 60);
+      s.pos    += s.vel * (1 / 60);
+
+      // Settle check
+      if (Math.abs(s.pos - target) < 0.0005 && Math.abs(s.vel) < 0.0005) {
+        s.pos = target;
+        s.vel = 0;
+        setValue(target);
+        return;
+      }
+
+      setValue(s.pos);
+      rafRef.current = requestAnimationFrame(step);
+    };
+
+    cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return value;
+}
+
+// ─── Animated panel ───────────────────────────────────────────────────────────
+
+function AnimatedPanel({
+  open,
+  children,
+  style,
+}: {
+  open: boolean;
+  children: React.ReactNode;
+  style?: React.CSSProperties;
+}) {
+  const spring    = useSpring(open);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [contentH, setContentH] = useState(0);
+
+  // Measure natural content height
+  useEffect(() => {
+    if (contentRef.current) {
+      setContentH(contentRef.current.scrollHeight);
+    }
+  }, [open, children]);
+
+  return (
+    <div
+      style={{
+        overflow: "hidden",
+        height: spring * contentH,
+        opacity: 0.15 + spring * 0.85,
+        transform: `translateY(${(1 - spring) * -8}px)`,
+        ...style,
+      }}
+    >
+      <div ref={contentRef}>{children}</div>
+    </div>
+  );
+}
+
 // ─── Icon button ──────────────────────────────────────────────────────────────
 
 function IconBtn({
   onClick,
   label,
   children,
+  playSound,
 }: {
   onClick?: () => void;
   label: string;
   children: React.ReactNode;
+  playSound?: () => void;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const [hovered, setHovered]   = useState(false);
+  const [pressed, setPressed]   = useState(false);
+
+  const handleClick = () => {
+    playSound?.();
+    onClick?.();
+  };
+
   return (
     <button
-      onClick={onClick}
+      onClick={handleClick}
       aria-label={label}
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseLeave={() => { setHovered(false); setPressed(false); }}
+      onMouseDown={() => setPressed(true)}
+      onMouseUp={() => setPressed(false)}
       style={{
         width: 48,
         height: 48,
@@ -90,6 +233,13 @@ function IconBtn({
         cursor: "pointer",
         flexShrink: 0,
         transition: "background 0.15s",
+        transform: pressed ? "scale(0.91)" : "scale(1)",
+        // Springy scale back
+        transitionProperty: "background, transform",
+        transitionDuration: pressed ? "0.05s" : "0.35s",
+        transitionTimingFunction: pressed
+          ? "ease-in"
+          : "cubic-bezier(0.34, 1.56, 0.64, 1)", // overshoot spring
       }}
     >
       {children}
@@ -98,8 +248,6 @@ function IconBtn({
 }
 
 // ─── Waveform ─────────────────────────────────────────────────────────────────
-// Bars are FIXED in height. Only the BRIGHTNESS animates.
-// Illumination: a soft glowing hump that breathes and drifts across the bars.
 
 function Waveform({
   playing,
@@ -113,13 +261,12 @@ function Waveform({
   const canvasRef    = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const rafRef       = useRef<number>(0);
-  const tRef         = useRef(0);         // animation time
+  const tRef         = useRef(0);
   const lastTsRef    = useRef<number | null>(null);
   const playingRef   = useRef(playing);
 
   useEffect(() => { playingRef.current = playing; }, [playing]);
 
-  // Size canvas once on mount
   useEffect(() => {
     const canvas    = canvasRef.current;
     const container = containerRef.current;
@@ -147,7 +294,6 @@ function Waveform({
       const W   = canvas.width  / dpr;
       const H   = canvas.height / dpr;
 
-      // Advance time while playing
       if (playingRef.current) {
         if (lastTsRef.current !== null) {
           tRef.current += (ts - lastTsRef.current) / 1000;
@@ -157,70 +303,43 @@ function Waveform({
         lastTsRef.current = null;
       }
 
-      const t = tRef.current;
+      const t     = tRef.current;
+      const MAX_H = H - 4;
 
       ctx.clearRect(0, 0, W, H);
 
       const barW  = W / NUM_BARS;
       const gap   = 1.5;
       const fillW = Math.max(1, barW - gap);
-      const MAX_H = H - 4;
 
       for (let i = 0; i < NUM_BARS; i++) {
-        const pos = i / (NUM_BARS - 1); // 0→1 horizontal position
-
-        // ── Fixed bar height ──────────────────────────────────────────────────
-        const barH = BAR_HEIGHT[i] * MAX_H;
-
-        // ── Illumination — only this animates ────────────────────────────────
+        const pos   = i / (NUM_BARS - 1);
+        const barH  = BAR_HEIGHT[i] * MAX_H;
         let brightness: number;
 
         if (playingRef.current || t > 0) {
-          // Multiple soft glowing humps that drift and breathe across the bars.
-          // Each hump has a centre position that oscillates slowly,
-          // and an amplitude that pulses up and down (simulating volume).
-
-          // Hump 1 — slow drift left→right, medium amplitude pulse
           const centre1 = 0.5 + Math.sin(t * 0.4) * 0.25;
           const amp1    = 0.55 + Math.sin(t * 1.1 + 0.5) * 0.35;
-          const width1  = 0.35;
-          const dist1   = Math.abs(pos - centre1) / width1;
+          const dist1   = Math.abs(pos - centre1) / 0.35;
           const glow1   = amp1 * Math.exp(-dist1 * dist1 * 2.0);
 
-          // Hump 2 — faster drift, smaller, fills gaps
           const centre2 = 0.45 + Math.sin(t * 0.7 + 1.2) * 0.30;
           const amp2    = 0.40 + Math.sin(t * 1.8 + 2.1) * 0.25;
-          const width2  = 0.25;
-          const dist2   = Math.abs(pos - centre2) / width2;
+          const dist2   = Math.abs(pos - centre2) / 0.25;
           const glow2   = amp2 * Math.exp(-dist2 * dist2 * 2.5);
 
-          // Hump 3 — wide, slow breathe — overall ambient lift
           const amp3  = 0.20 + Math.sin(t * 0.55 + 3.0) * 0.12;
           const dist3 = Math.abs(pos - 0.5) / 0.55;
           const glow3 = amp3 * Math.exp(-dist3 * dist3 * 1.5);
 
-          // Combine all humps
-          const totalGlow = Math.min(1, glow1 + glow2 + glow3);
-
-          // Base dim brightness (bars always faintly visible)
-          const base = 0.08 + BAR_HEIGHT[i] * 0.06;
-
-          brightness = base + totalGlow * 0.82;
+          const base  = 0.08 + BAR_HEIGHT[i] * 0.06;
+          brightness  = Math.min(1, base + Math.min(1, glow1 + glow2 + glow3) * 0.82);
         } else {
-          // Idle: bars faintly visible, darker in centre, very subtle
           brightness = 0.08 + BAR_HEIGHT[i] * 0.10;
         }
 
-        brightness = Math.max(0, Math.min(1, brightness));
-
         ctx.fillStyle = `rgba(255,255,255,${brightness.toFixed(3)})`;
-        // Bottom-anchored, fixed height
-        ctx.fillRect(
-          i * barW + gap / 2,
-          H - barH,
-          fillW,
-          barH
-        );
+        ctx.fillRect(i * barW + gap / 2, H - barH, fillW, barH);
       }
     };
 
@@ -260,6 +379,8 @@ export default function AudioPlayer() {
   const startTsRef  = useRef<number | null>(null);
   const rafRef      = useRef<number>(0);
   const playingRef  = useRef(false);
+
+  const playTock = useClickSound();
 
   const track = TRACKS[trackIndex];
   const total = track.duration;
@@ -309,8 +430,8 @@ export default function AudioPlayer() {
     setTrackIndex(idx);
   }, [stop]);
 
-  const prev = () => skipTo((trackIndex - 1 + TRACKS.length) % TRACKS.length);
-  const next = () => skipTo((trackIndex + 1) % TRACKS.length);
+  const prev = () => { playTock(); skipTo((trackIndex - 1 + TRACKS.length) % TRACKS.length); };
+  const next = () => { playTock(); skipTo((trackIndex + 1) % TRACKS.length); };
 
   const scrub = (pct: number) => {
     const t = pct * total;
@@ -335,18 +456,23 @@ export default function AudioPlayer() {
       {/* View Transcript tab */}
       <div style={{ display: "flex" }}>
         <button
-          onClick={() => setShowTranscript((v) => !v)}
+          onClick={() => { playTock(); setShowTranscript((v) => !v); }}
           aria-expanded={showTranscript}
+          onMouseDown={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(0.96)"; }}
+          onMouseUp={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; }}
           style={{
             display: "flex", alignItems: "center", gap: 10,
             padding: "12px 20px", background: "#1C1C1C", border: "none",
             borderRadius: "12px 12px 0 0", color: "#ffffff",
             fontFamily: "'IBM Plex Sans', sans-serif",
             fontSize: 15, fontWeight: 400, letterSpacing: "0.01em",
-            cursor: "pointer", whiteSpace: "nowrap", transition: "background 0.15s",
+            cursor: "pointer", whiteSpace: "nowrap",
+            transition: "background 0.15s, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)",
+            transformOrigin: "bottom center",
           }}
           onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "#242424")}
-          onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "#1C1C1C")}
+          // onMouseLeave2={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "#1C1C1C")}
         >
           <ScrollText size={17} strokeWidth={1.5} />
           View Transcript
@@ -388,24 +514,34 @@ export default function AudioPlayer() {
 
           {/* Controls */}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <IconBtn onClick={prev} label="Previous track"><SkipBack size={20} fill="white" strokeWidth={0} /></IconBtn>
-            <IconBtn onClick={next} label="Next track"><SkipForward size={20} fill="white" strokeWidth={0} /></IconBtn>
+            <IconBtn onClick={prev} label="Previous track" playSound={playTock}>
+              <SkipBack size={20} fill="white" strokeWidth={0} />
+            </IconBtn>
+            <IconBtn onClick={next} label="Next track" playSound={playTock}>
+              <SkipForward size={20} fill="white" strokeWidth={0} />
+            </IconBtn>
             <div style={{ flex: 1 }} />
-            <IconBtn onClick={playing ? pause : play} label={playing ? "Pause" : "Play"}>
+            <IconBtn onClick={playing ? pause : play} label={playing ? "Pause" : "Play"} playSound={playTock}>
               {playing ? <Pause size={20} fill="white" strokeWidth={0} /> : <Play size={20} fill="white" strokeWidth={0} />}
             </IconBtn>
             <button
-              onClick={stop}
+              onClick={() => { playTock(); stop(); }}
+              onMouseDown={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(0.93)"; }}
+              onMouseUp={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
+                (e.currentTarget as HTMLButtonElement).style.background = "#ffffff";
+              }}
               style={{
                 display: "flex", alignItems: "center", gap: 10,
                 padding: "0 20px", height: 48, borderRadius: 10,
                 background: "#ffffff", border: "none", color: "#111111",
                 fontFamily: "'IBM Plex Sans', sans-serif",
                 fontSize: 15, fontWeight: 600, letterSpacing: "0.01em",
-                cursor: "pointer", flexShrink: 0, transition: "background 0.15s",
+                cursor: "pointer", flexShrink: 0,
+                transition: "background 0.15s, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)",
               }}
               onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "#f0f0f0")}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "#ffffff")}
             >
               Stop <Square size={14} fill="#E8470A" color="#E8470A" strokeWidth={0} />
             </button>
@@ -414,31 +550,47 @@ export default function AudioPlayer() {
 
         {/* Side buttons */}
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <IconBtn onClick={() => setShowQueue((v) => !v)} label="Toggle queue">
+          <IconBtn onClick={() => setShowQueue((v) => !v)} label="Toggle queue" playSound={playTock}>
             <ChevronDown size={20} strokeWidth={1.5}
-              style={{ transform: showQueue ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
+              style={{
+                transform: showQueue ? "rotate(180deg)" : "rotate(0deg)",
+                transition: "transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)",
+              }}
+            />
           </IconBtn>
-          <IconBtn label="More options"><MoreVertical size={20} strokeWidth={1.5} /></IconBtn>
+          <IconBtn label="More options" playSound={playTock}>
+            <MoreVertical size={20} strokeWidth={1.5} />
+          </IconBtn>
         </div>
       </div>
 
-      {/* Transcript */}
-      {showTranscript && (
+      {/* Transcript — spring animated */}
+      <AnimatedPanel open={showTranscript}>
         <div style={{ background: "#171717", borderRadius: "0 0 12px 12px", padding: "20px 24px" }}>
           {TRANSCRIPT_LINES.map((line, i) => (
-            <p key={i} style={{ fontSize: 15, fontWeight: 400, color: i % 2 === 0 ? "#ffffff" : "#BDBDBD", lineHeight: 1.75, letterSpacing: "0.01em", margin: 0 }}>{line}</p>
+            <p key={i} style={{
+              fontSize: 15, fontWeight: 400,
+              color: i % 2 === 0 ? "#ffffff" : "#BDBDBD",
+              lineHeight: 1.75, letterSpacing: "0.01em", margin: 0,
+            }}>{line}</p>
           ))}
         </div>
-      )}
+      </AnimatedPanel>
 
-      {/* Queue */}
-      {showQueue && (
-        <div style={{ background: "#171717", borderRadius: "0 0 12px 0", marginTop: 2, marginRight: 58, padding: "16px 24px" }}>
+      {/* Queue — spring animated */}
+      <AnimatedPanel open={showQueue} style={{ marginRight: 58 }}>
+        <div style={{ background: "#171717", borderRadius: "0 0 12px 0", padding: "16px 24px" }}>
           <p style={{ fontSize: 11, fontWeight: 600, color: "#BDBDBD", letterSpacing: "0.12em", textTransform: "uppercase", margin: "0 0 12px" }}>Queue</p>
           {TRACKS.map((t, i) => (
             <div
-              key={t.id} onClick={() => skipTo(i)}
-              style={{ display: "flex", alignItems: "center", gap: 14, padding: "9px 10px", borderRadius: 8, cursor: "pointer", background: i === trackIndex ? "#1C1C1C" : "transparent", transition: "background 0.15s" }}
+              key={t.id}
+              onClick={() => { playTock(); skipTo(i); }}
+              style={{
+                display: "flex", alignItems: "center", gap: 14,
+                padding: "9px 10px", borderRadius: 8, cursor: "pointer",
+                background: i === trackIndex ? "#1C1C1C" : "transparent",
+                transition: "background 0.15s",
+              }}
               onMouseEnter={(e) => { if (i !== trackIndex) (e.currentTarget as HTMLDivElement).style.background = "#1a1a1a"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = i === trackIndex ? "#1C1C1C" : "transparent"; }}
             >
@@ -456,7 +608,7 @@ export default function AudioPlayer() {
             </div>
           ))}
         </div>
-      )}
+      </AnimatedPanel>
     </div>
   );
 }
