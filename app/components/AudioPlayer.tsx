@@ -686,7 +686,86 @@ function SideMenu({
   );
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
+// ─── Close sound — soft descending whoosh ─────────────────────────────────────
+function useCloseSound() {
+  const ctxRef = useRef<AudioContext | null>(null);
+  const getCtx = useCallback(() => {
+    if (!ctxRef.current) ctxRef.current = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+    return ctxRef.current;
+  }, []);
+  return useCallback(() => {
+    try {
+      const ctx = getCtx(); const now = ctx.currentTime;
+      // Soft descending sine tone — signals dismissal
+      const osc = ctx.createOscillator(); const g = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(520, now);
+      osc.frequency.exponentialRampToValueAtTime(180, now + 0.18);
+      g.gain.setValueAtTime(0.18, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+      osc.connect(g); g.connect(ctx.destination);
+      osc.start(now); osc.stop(now + 0.25);
+    } catch { /* ignore */ }
+  }, [getCtx]);
+}
+
+// ─── Copy button with "Copied" animation ─────────────────────────────────────
+function CopyBtn({ onCopy }: { onCopy: () => void }) {
+  const [copied, setCopied] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleCopy = () => {
+    onCopy();
+    setCopied(true);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setCopied(false), 1800);
+  };
+
+  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
+
+  return (
+    <button
+      onClick={handleCopy}
+      aria-label="Copy transcript"
+      style={{
+        height: 28,
+        minWidth: 28,
+        padding: copied ? "0 8px" : "0",
+        borderRadius: 6,
+        background: copied ? "#1a3a1a" : "#2a2a2a",
+        border: "none",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        cursor: "pointer",
+        color: copied ? "#4ade80" : "#BDBDBD",
+        transition: "background 0.2s, color 0.2s, min-width 0.3s cubic-bezier(0.34,1.56,0.64,1), padding 0.3s",
+        overflow: "hidden",
+        whiteSpace: "nowrap",
+        fontFamily: "'IBM Plex Sans', sans-serif",
+        fontSize: 11,
+        fontWeight: 600,
+        letterSpacing: "0.02em",
+      }}
+      onMouseEnter={(e) => { if (!copied) { (e.currentTarget as HTMLButtonElement).style.background = "#333"; (e.currentTarget as HTMLButtonElement).style.color = "#fff"; } }}
+      onMouseLeave={(e) => { if (!copied) { (e.currentTarget as HTMLButtonElement).style.background = "#2a2a2a"; (e.currentTarget as HTMLButtonElement).style.color = "#BDBDBD"; } }}
+    >
+      {copied ? (
+        <span style={{ animation: "fadeInUp 0.2s ease forwards" }}>Copied</span>
+      ) : (
+        <Copy size={13} strokeWidth={1.8} />
+      )}
+      <style>{`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(4px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+    </button>
+  );
+}
+
+
 export default function AudioPlayer() {
   const [noteIndex, setNoteIndex] = useState(0);
   const [notes, setNotes] = useState(NOTES);
@@ -702,6 +781,7 @@ export default function AudioPlayer() {
   const lastSecRef = useRef(-1);
   const playTock = useClickSound();
   const playTick = useTickSound();
+  const playClose = useCloseSound();
   const note = notes[noteIndex] ?? notes[0];
   const total = note?.duration ?? 60;
 
@@ -807,7 +887,19 @@ export default function AudioPlayer() {
               {notes.map((n, i) => {
                 const isActive = i === noteIndex;
                 return (
-                  <div key={n.id} onClick={() => { playTock(); skipTo(i, i > noteIndex ? "right" : "left"); }}
+                  <div key={n.id}
+                    onClick={() => { playTock(); skipTo(i, i > noteIndex ? "right" : "left"); }}
+                    onDoubleClick={() => {
+                      playTock();
+                      skipTo(i, i > noteIndex ? "right" : "left");
+                      // Small delay to let skipTo settle, then play
+                      setTimeout(() => {
+                        playingRef.current = true;
+                        startTsRef.current = null;
+                        setPlaying(true);
+                        rafRef.current = requestAnimationFrame(tick);
+                      }, 50);
+                    }}
                     style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 10px", borderRadius:8, cursor:"pointer", background:isActive?"#1C1C1C":"transparent", transition:"background 0.15s" }}
                     onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLDivElement).style.background = "#1a1a1a"; }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = isActive?"#1C1C1C":"transparent"; }}
@@ -825,27 +917,15 @@ export default function AudioPlayer() {
                     {/* Copy + Delete — only on active row */}
                     {isActive && (
                       <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0 }} onClick={(e) => e.stopPropagation()}>
-                        {/* Copy transcript */}
-                        <button
-                          onClick={() => {
-                            const text = n.transcript.filter(l => l.text).map(l => l.text).join(" ");
-                            navigator.clipboard?.writeText(text);
-                            playTock();
-                          }}
-                          aria-label="Copy transcript"
-                          style={{ width:28, height:28, borderRadius:6, background:"#2a2a2a", border:"none", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"#BDBDBD", transition:"background 0.15s, color 0.15s" }}
-                          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#333"; (e.currentTarget as HTMLButtonElement).style.color = "#fff"; }}
-                          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#2a2a2a"; (e.currentTarget as HTMLButtonElement).style.color = "#BDBDBD"; }}
-                        >
-                          <Copy size={13} strokeWidth={1.8} />
-                        </button>
+                        <CopyBtn onCopy={() => {
+                          const text = n.transcript.filter(l => l.text).map(l => l.text).join(" ");
+                          navigator.clipboard?.writeText(text);
+                          playTock();
+                        }} />
 
                         {/* Delete note */}
                         <button
-                          onClick={() => {
-                            playTock();
-                            deleteNote(i);
-                          }}
+                          onClick={() => { playTock(); deleteNote(i); }}
                           aria-label="Delete note"
                           style={{ width:28, height:28, borderRadius:6, background:"#2a2a2a", border:"none", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"#BDBDBD", transition:"background 0.15s, color 0.15s" }}
                           onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#3a1a1a"; (e.currentTarget as HTMLButtonElement).style.color = "#E8470A"; }}
@@ -871,7 +951,8 @@ export default function AudioPlayer() {
         lines={note.transcript} currentTime={displayTime}
         playing={playing} onPlayPause={playing ? pause : play}
         onStop={() => { stop(); setShowLyrics(false); }}
-        onNext={() => { playTock(); skipTo((noteIndex + 1) % NOTES.length, "right"); }}
+        onNext={() => { playTock(); skipTo((noteIndex + 1) % notes.length, "right"); }}
+        onCloseSound={playClose}
         trackTitle={note.title}
       />
     </>

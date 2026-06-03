@@ -1,7 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { X, Pause, Play, Square, SkipForward } from "lucide-react";
+import { X, Pause, Play, Square } from "lucide-react";
+
+// Filled skip-forward icon matching main player
+const SkipFwdFilled = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24">
+    <rect x="17.5" y="4" width="2.5" height="16" rx="1" fill="currentColor"/>
+    <polygon points="5,4 16,12 5,20" fill="currentColor"/>
+  </svg>
+);
 
 export interface TranscriptLine {
   id: number;
@@ -18,6 +26,7 @@ interface Props {
   onPlayPause: () => void;
   onStop: () => void;
   onNext: () => void;
+  onCloseSound?: () => void;
   trackTitle: string;
 }
 
@@ -42,7 +51,7 @@ class Spring {
   }
 }
 
-export default function TranscriptDrawer({ open, onClose, lines, currentTime, playing, onPlayPause, onStop, onNext, trackTitle }: Props) {
+export default function TranscriptDrawer({ open, onClose, lines, currentTime, playing, onPlayPause, onStop, onNext, onCloseSound, trackTitle }: Props) {
   const [mounted, setMounted] = useState(false);
   const [position, setPosition] = useState<Position>("right");
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -208,6 +217,11 @@ export default function TranscriptDrawer({ open, onClose, lines, currentTime, pl
     }
   }, [runSpring, onClose, switchPosition]);
 
+  const handleClose = useCallback(() => {
+    onCloseSound?.();
+    onClose();
+  }, [onClose, onCloseSound]);
+
   useEffect(() => { posRef.current = position; }, [position]);
 
   if (!mounted) return null;
@@ -221,7 +235,7 @@ export default function TranscriptDrawer({ open, onClose, lines, currentTime, pl
   return (
     <>
       {/* Scrim */}
-      <div ref={scrimRef} onClick={onClose}
+      <div ref={scrimRef} onClick={handleClose}
         style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0)", zIndex: 40, pointerEvents: open ? "auto" : "none" }}
       />
 
@@ -251,7 +265,7 @@ export default function TranscriptDrawer({ open, onClose, lines, currentTime, pl
               <span style={{ fontSize: 11, color: "#3a3a3a", fontFamily: "'IBM Plex Sans', sans-serif", userSelect: "none" }}>
                 {isRight ? "drag ↓ for bottom" : "drag ← for side"}
               </span>
-              <button onClick={onClose}
+              <button onClick={handleClose}
                 style={{ width: 34, height: 34, borderRadius: 8, background: "#2a2a2a", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#BDBDBD", transition: "background 0.15s" }}
                 onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#333"; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#2a2a2a"; }}
@@ -305,7 +319,7 @@ export default function TranscriptDrawer({ open, onClose, lines, currentTime, pl
               onMouseDown={(e) => ((e.currentTarget as HTMLButtonElement).style.transform = "scale(0.88)")}
               onMouseUp={(e) => ((e.currentTarget as HTMLButtonElement).style.transform = "scale(1)")}
               onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.transform = "scale(1)")}
-            ><SkipForward size={18} fill="white" strokeWidth={0} /></button>
+            ><SkipFwdFilled /></button>
           </div>
         </div>
       </div>
