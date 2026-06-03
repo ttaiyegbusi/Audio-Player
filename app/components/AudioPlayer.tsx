@@ -12,19 +12,19 @@ import {
   ScrollText,
 } from "lucide-react";
 
-// ─── Data ────────────────────────────────────────────────────────────────────
+// ─── Data ─────────────────────────────────────────────────────────────────────
 
 interface Track {
   id: number;
   title: string;
-  duration: number; // seconds
+  duration: number;
 }
 
 const TRACKS: Track[] = [
-  { id: 1, title: "Pray for me - Theophilus Sunday", duration: 321 },
-  { id: 2, title: "Glorious - Theophilus Sunday",    duration: 274 },
-  { id: 3, title: "Way Maker - Sinach",              duration: 348 },
-  { id: 4, title: "Hallelujah Challenge - N. Bassey", duration: 412 },
+  { id: 1, title: "Pray for me - Theophilus Sunday",    duration: 321 },
+  { id: 2, title: "Glorious - Theophilus Sunday",       duration: 274 },
+  { id: 3, title: "Way Maker - Sinach",                 duration: 348 },
+  { id: 4, title: "Hallelujah Challenge - N. Bassey",   duration: 412 },
   { id: 5, title: "All Things New - Theophilus Sunday", duration: 289 },
 ];
 
@@ -35,24 +35,25 @@ const TRANSCRIPT_LINES = [
   "Thou who rulest wind and water, stand by me.",
 ];
 
-// ─── Waveform data ────────────────────────────────────────────────────────────
-// Pre-computed, deterministic heights that create the mountain-bell-curve shape
-// visible in the design: low at edges, peaks in the middle third.
-const NUM_BARS = 90;
+// ─── Waveform ─────────────────────────────────────────────────────────────────
+// Deterministic bell-curve envelope with fine detail.
+// Heights are normalised 0→1 and represent HALF-height (bar mirrors top+bottom).
+
+const NUM_BARS = 100;
+
 const WAVE_HEIGHTS: number[] = Array.from({ length: NUM_BARS }, (_, i) => {
   const t = i / (NUM_BARS - 1); // 0 → 1
-  // Bell-curve envelope
-  const envelope = Math.exp(-Math.pow((t - 0.5) * 2.6, 2));
-  // Fine detail — pseudo-random but deterministic
+  // Bell curve peaked slightly left of centre (matches the GIF)
+  const envelope = Math.exp(-Math.pow((t - 0.42) * 2.8, 2));
+  // Deterministic fine detail — no Math.random()
   const detail =
-    Math.abs(Math.sin(i * 0.47 + 1.2)) * 0.35 +
-    Math.abs(Math.sin(i * 1.1 + 0.7)) * 0.25 +
-    Math.abs(Math.sin(i * 0.19 + 3.1)) * 0.2;
-  const raw = envelope * (0.45 + detail * 0.55);
-  return Math.max(0.03, Math.min(1, raw));
+    Math.abs(Math.sin(i * 0.53 + 1.1)) * 0.3 +
+    Math.abs(Math.sin(i * 1.17 + 0.4)) * 0.2 +
+    Math.abs(Math.sin(i * 0.23 + 2.7)) * 0.15;
+  return Math.max(0.04, Math.min(1, envelope * (0.5 + detail * 0.5)));
 });
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatTime(s: number): string {
   const m = Math.floor(s / 60);
@@ -60,9 +61,8 @@ function formatTime(s: number): string {
   return `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// ─── Icon button ──────────────────────────────────────────────────────────────
 
-/** Dark square icon button — matches the design's #1C1C1C rounded squares */
 function IconBtn({
   onClick,
   label,
@@ -72,15 +72,18 @@ function IconBtn({
   label: string;
   children: React.ReactNode;
 }) {
+  const [hovered, setHovered] = useState(false);
   return (
     <button
       onClick={onClick}
       aria-label={label}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
         width: 48,
         height: 48,
         borderRadius: 10,
-        background: "#1C1C1C",
+        background: hovered ? "#252525" : "#1C1C1C",
         border: "none",
         color: "#ffffff",
         display: "flex",
@@ -90,24 +93,93 @@ function IconBtn({
         flexShrink: 0,
         transition: "background 0.15s",
       }}
-      onMouseEnter={(e) =>
-        ((e.currentTarget as HTMLButtonElement).style.background = "#252525")
-      }
-      onMouseLeave={(e) =>
-        ((e.currentTarget as HTMLButtonElement).style.background = "#1C1C1C")
-      }
     >
       {children}
     </button>
   );
 }
 
+// ─── Waveform component ───────────────────────────────────────────────────────
+
+function Waveform({
+  progress,
+  onScrub,
+}: {
+  progress: number; // 0 → 1
+  onScrub: (pct: number) => void;
+}) {
+  const CONTAINER_HEIGHT = 110;
+  const MAX_HALF_HEIGHT = 52; // max half-bar height in px (mirrored)
+
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    onScrub(Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)));
+  };
+
+  return (
+    <div
+      onClick={handleClick}
+      role="progressbar"
+      aria-valuenow={Math.round(progress * 100)}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-label="Audio progress"
+      style={{
+        height: CONTAINER_HEIGHT,
+        display: "flex",
+        alignItems: "center",       // vertical centre — bars grow up AND down
+        gap: 1,
+        cursor: "pointer",
+        overflow: "hidden",
+        margin: "16px 0 20px",
+      }}
+    >
+      {WAVE_HEIGHTS.map((h, i) => {
+        const barPct = i / (NUM_BARS - 1); // 0 → 1 position of this bar
+
+        // Distance from playhead — used for brightness glow
+        const dist = Math.abs(barPct - progress);
+
+        // Glow window: bars within ~0.25 of the playhead get a brightness boost
+        const glowRadius = 0.30;
+        const glow = Math.max(0, 1 - dist / glowRadius); // 0 → 1
+
+        // Base brightness from the bell-curve height (darker at edges)
+        // Far edges: ~0.10 opacity. Centre peak: ~0.70 opacity.
+        const baseBrightness = 0.10 + h * 0.60;
+
+        // Add glow on top — playhead region becomes brighter
+        const brightness = Math.min(1, baseBrightness + glow * 0.55);
+
+        const halfHeight = Math.round(h * MAX_HALF_HEIGHT);
+        const barHeight = halfHeight * 2; // full mirrored height
+
+        return (
+          <div
+            key={i}
+            style={{
+              flex: 1,
+              minWidth: 2,
+              maxWidth: 5,
+              height: barHeight,
+              background: `rgba(255, 255, 255, ${brightness})`,
+              borderRadius: 0,         // flat tops and bottoms — no rounding
+              flexShrink: 0,
+              transition: "background 0.05s linear",
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function AudioPlayer() {
-  const [trackIndex, setTrackIndex] = useState(0);
-  const [current, setCurrent] = useState(0);
-  const [playing, setPlaying]   = useState(false);
+  const [trackIndex, setTrackIndex]         = useState(0);
+  const [current, setCurrent]               = useState(0);
+  const [playing, setPlaying]               = useState(false);
   const [showTranscript, setShowTranscript] = useState(false);
   const [showQueue, setShowQueue]           = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -115,7 +187,7 @@ export default function AudioPlayer() {
   const track = TRACKS[trackIndex];
   const total = track.duration;
 
-  // ── Playback engine ────────────────────────────────────────────────────────
+  // ── Playback engine ───────────────────────────────────────────────────────
 
   const clearTick = useCallback(() => {
     if (intervalRef.current) {
@@ -160,33 +232,27 @@ export default function AudioPlayer() {
   const prev = () => skipTo((trackIndex - 1 + TRACKS.length) % TRACKS.length);
   const next = () => skipTo((trackIndex + 1) % TRACKS.length);
 
-  const scrub = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const pct  = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    setCurrent(Math.round(pct * total));
-  };
-
   useEffect(() => () => clearTick(), [clearTick]);
 
-  // ── Derived ────────────────────────────────────────────────────────────────
+  // ── Derived ───────────────────────────────────────────────────────────────
 
   const progress    = total > 0 ? current / total : 0;
   const statusLabel = playing ? "Playing" : current > 0 ? "Paused" : "Stopped";
 
-  // ─── Render ────────────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div
       style={{
         fontFamily: "'IBM Plex Sans', sans-serif",
         width: "100%",
-        maxWidth: 780,
+        maxWidth: 820,
         margin: "0 auto",
         userSelect: "none",
       }}
     >
-      {/* ── View Transcript tab ─────────────────────────────────────────────── */}
-      <div style={{ display: "flex", alignItems: "flex-end" }}>
+      {/* ── View Transcript tab ──────────────────────────────────────────────── */}
+      <div style={{ display: "flex" }}>
         <button
           onClick={() => setShowTranscript((v) => !v)}
           aria-expanded={showTranscript}
@@ -214,15 +280,15 @@ export default function AudioPlayer() {
             ((e.currentTarget as HTMLButtonElement).style.background = "#1C1C1C")
           }
         >
-          <ScrollText size={18} strokeWidth={1.5} />
+          <ScrollText size={17} strokeWidth={1.5} />
           View Transcript
         </button>
       </div>
 
-      {/* ── Player row (card + side buttons) ────────────────────────────────── */}
+      {/* ── Player row ───────────────────────────────────────────────────────── */}
       <div style={{ display: "flex", alignItems: "stretch", gap: 10 }}>
 
-        {/* ── Main card ───────────────────────────────────────────────────── */}
+        {/* ── Main card ──────────────────────────────────────────────────────── */}
         <div
           style={{
             flex: 1,
@@ -230,22 +296,17 @@ export default function AudioPlayer() {
             background: "#171717",
             borderRadius: "0 12px 12px 12px",
             padding: "22px 24px 20px",
-            display: "flex",
-            flexDirection: "column",
-            gap: 0,
           }}
         >
-          {/* Meta row: title + timer */}
+          {/* Meta: title + timer */}
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "flex-start",
-              marginBottom: 8,
             }}
           >
-            {/* Left: title + status */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
               <span
                 style={{
                   fontSize: 17,
@@ -258,7 +319,6 @@ export default function AudioPlayer() {
                 {track.title}
               </span>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                {/* Orange dot */}
                 <span
                   style={{
                     width: 8,
@@ -285,10 +345,10 @@ export default function AudioPlayer() {
               </div>
             </div>
 
-            {/* Right: big timer */}
+            {/* Big timer */}
             <span
               style={{
-                fontSize: 48,
+                fontSize: 52,
                 fontWeight: 600,
                 color: "#ffffff",
                 letterSpacing: "0.04em",
@@ -301,79 +361,31 @@ export default function AudioPlayer() {
             </span>
           </div>
 
-          {/* ── Waveform ──────────────────────────────────────────────────── */}
-          <div
-            onClick={scrub}
-            role="progressbar"
-            aria-valuenow={current}
-            aria-valuemin={0}
-            aria-valuemax={total}
-            aria-label="Scrub audio"
-            style={{
-              height: 120,
-              display: "flex",
-              alignItems: "center",
-              gap: 1.5,
-              cursor: "pointer",
-              margin: "14px 0 18px",
-              overflow: "hidden",
-            }}
-          >
-            {WAVE_HEIGHTS.map((h, i) => {
-              const barPct  = i / NUM_BARS;
-              const isPast  = barPct < progress;
-              // Mirror the bar: taller in center via the envelope already baked in
-              const heightPct = h; // 0..1
-              const heightPx  = Math.round(heightPct * 112);
+          {/* Waveform */}
+          <Waveform
+            progress={progress}
+            onScrub={(pct) => setCurrent(Math.round(pct * total))}
+          />
 
-              // Brightness gradient: bars near edges are darker, centre is brighter
-              // Use the envelope value directly for opacity
-              const brightness = 0.15 + h * 0.85; // 0.15 → 1.0
-
-              const color = isPast
-                ? `rgba(232,71,10,${0.6 + h * 0.4})`
-                : `rgba(255,255,255,${brightness * 0.85})`;
-
-              return (
-                <div
-                  key={i}
-                  style={{
-                    flex: 1,
-                    minWidth: 2,
-                    maxWidth: 4,
-                    height: heightPx,
-                    background: color,
-                    borderRadius: 0,
-                    flexShrink: 0,
-                  }}
-                />
-              );
-            })}
-          </div>
-
-          {/* ── Controls row ──────────────────────────────────────────────── */}
+          {/* Controls */}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <IconBtn onClick={prev} label="Previous track">
               <SkipBack size={20} fill="white" strokeWidth={0} />
             </IconBtn>
-
             <IconBtn onClick={next} label="Next track">
               <SkipForward size={20} fill="white" strokeWidth={0} />
             </IconBtn>
 
-            {/* Spacer */}
             <div style={{ flex: 1 }} />
 
-            {/* Pause / Play */}
             <IconBtn onClick={playing ? pause : play} label={playing ? "Pause" : "Play"}>
-              {playing ? (
-                <Pause size={20} fill="white" strokeWidth={0} />
-              ) : (
-                <Play size={20} fill="white" strokeWidth={0} />
-              )}
+              {playing
+                ? <Pause size={20} fill="white" strokeWidth={0} />
+                : <Play  size={20} fill="white" strokeWidth={0} />
+              }
             </IconBtn>
 
-            {/* Stop button — white pill */}
+            {/* Stop — white pill */}
             <button
               onClick={stop}
               style={{
@@ -407,19 +419,11 @@ export default function AudioPlayer() {
           </div>
         </div>
 
-        {/* ── Side buttons ──────────────────────────────────────────────────── */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 8,
-            justifyContent: "flex-start",
-            paddingTop: 0,
-          }}
-        >
+        {/* ── Side buttons ───────────────────────────────────────────────────── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <IconBtn
             onClick={() => setShowQueue((v) => !v)}
-            label="Collapse / expand"
+            label="Toggle queue"
           >
             <ChevronDown
               size={20}
@@ -430,21 +434,19 @@ export default function AudioPlayer() {
               }}
             />
           </IconBtn>
-
           <IconBtn label="More options">
             <MoreVertical size={20} strokeWidth={1.5} />
           </IconBtn>
         </div>
       </div>
 
-      {/* ── Transcript panel ──────────────────────────────────────────────────── */}
+      {/* ── Transcript panel ─────────────────────────────────────────────────── */}
       {showTranscript && (
         <div
           style={{
             background: "#171717",
             borderRadius: "0 0 12px 12px",
             padding: "20px 24px",
-            marginTop: -1,
           }}
         >
           {TRANSCRIPT_LINES.map((line, i) => (
@@ -465,7 +467,7 @@ export default function AudioPlayer() {
         </div>
       )}
 
-      {/* ── Queue panel ───────────────────────────────────────────────────────── */}
+      {/* ── Queue panel ──────────────────────────────────────────────────────── */}
       {showQueue && (
         <div
           style={{
@@ -483,7 +485,7 @@ export default function AudioPlayer() {
               color: "#BDBDBD",
               letterSpacing: "0.12em",
               textTransform: "uppercase",
-              marginBottom: 12,
+              margin: "0 0 12px",
             }}
           >
             Queue
@@ -511,7 +513,6 @@ export default function AudioPlayer() {
                   i === trackIndex ? "#1C1C1C" : "transparent";
               }}
             >
-              {/* Number or playing dot */}
               <div
                 style={{
                   width: 18,
@@ -537,8 +538,6 @@ export default function AudioPlayer() {
                   i + 1
                 )}
               </div>
-
-              {/* Title */}
               <span
                 style={{
                   flex: 1,
@@ -553,8 +552,6 @@ export default function AudioPlayer() {
               >
                 {t.title}
               </span>
-
-              {/* Duration */}
               <span
                 style={{
                   fontSize: 13,
