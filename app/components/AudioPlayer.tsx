@@ -35,27 +35,20 @@ const TRANSCRIPT_LINES = [
   "Thou who rulest wind and water, stand by me.",
 ];
 
-// ─── Waveform config ──────────────────────────────────────────────────────────
+// ─── Bar shape — FIXED, never changes ────────────────────────────────────────
+// These are the static heights of each bar. They never move.
+// Bell curve envelope, tall in centre, shorter at edges.
 
 const NUM_BARS = 130;
 
-// Per-bar envelope: bell curve — tall in centre, short at edges
-const ENVELOPE: number[] = Array.from({ length: NUM_BARS }, (_, i) => {
+const BAR_HEIGHT: number[] = Array.from({ length: NUM_BARS }, (_, i) => {
   const t = i / (NUM_BARS - 1);
-  // Bell curve envelope
-  const bell = Math.exp(-Math.pow((t - 0.5) * 2.6, 2));
-  // Small deterministic variation so adjacent bars aren't identical
-  const variation =
-    Math.abs(Math.sin(i * 0.61 + 1.0)) * 0.15 +
-    Math.abs(Math.sin(i * 1.33 + 0.5)) * 0.10;
-  return Math.max(0.08, Math.min(1, bell * (0.75 + variation)));
-});
-
-// Per-bar phase offset — each bar oscillates at a slightly different phase
-// so the motion ripples across the waveform like a wave
-const PHASE_OFFSET: number[] = Array.from({ length: NUM_BARS }, (_, i) => {
-  // Primary phase: smooth ripple left→right
-  return (i / NUM_BARS) * Math.PI * 4;
+  const bell = Math.exp(-Math.pow((t - 0.5) * 2.5, 2));
+  const detail =
+    Math.abs(Math.sin(i * 0.61 + 1.0)) * 0.18 +
+    Math.abs(Math.sin(i * 1.33 + 0.5)) * 0.12 +
+    Math.abs(Math.sin(i * 0.27 + 2.3)) * 0.08;
+  return Math.max(0.05, Math.min(1, bell * (0.72 + detail)));
 });
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -104,7 +97,9 @@ function IconBtn({
   );
 }
 
-// ─── Waveform canvas ──────────────────────────────────────────────────────────
+// ─── Waveform ─────────────────────────────────────────────────────────────────
+// Bars are FIXED in height. Only the BRIGHTNESS animates.
+// Illumination: a soft glowing hump that breathes and drifts across the bars.
 
 function Waveform({
   playing,
@@ -118,13 +113,13 @@ function Waveform({
   const canvasRef    = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const rafRef       = useRef<number>(0);
-  const timeRef      = useRef<number>(0); // animation time in seconds
+  const tRef         = useRef(0);         // animation time
   const lastTsRef    = useRef<number | null>(null);
   const playingRef   = useRef(playing);
 
   useEffect(() => { playingRef.current = playing; }, [playing]);
 
-  // Size canvas on mount
+  // Size canvas once on mount
   useEffect(() => {
     const canvas    = canvasRef.current;
     const container = containerRef.current;
@@ -139,7 +134,6 @@ function Waveform({
     if (ctx) ctx.scale(dpr, dpr);
   }, []);
 
-  // Draw loop
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -153,59 +147,79 @@ function Waveform({
       const W   = canvas.width  / dpr;
       const H   = canvas.height / dpr;
 
-      // Advance animation time only while playing
+      // Advance time while playing
       if (playingRef.current) {
         if (lastTsRef.current !== null) {
-          timeRef.current += (ts - lastTsRef.current) / 1000;
+          tRef.current += (ts - lastTsRef.current) / 1000;
         }
         lastTsRef.current = ts;
       } else {
         lastTsRef.current = null;
       }
 
-      const t   = timeRef.current;
-      const MAX_H = H - 4;
-      // Idle min height — bars always visible, just short
-      const IDLE_H = 0.06;
+      const t = tRef.current;
 
       ctx.clearRect(0, 0, W, H);
 
       const barW  = W / NUM_BARS;
       const gap   = 1.5;
       const fillW = Math.max(1, barW - gap);
+      const MAX_H = H - 4;
 
       for (let i = 0; i < NUM_BARS; i++) {
-        const env = ENVELOPE[i];
-        const phi = PHASE_OFFSET[i];
+        const pos = i / (NUM_BARS - 1); // 0→1 horizontal position
 
-        let heightFactor: number;
+        // ── Fixed bar height ──────────────────────────────────────────────────
+        const barH = BAR_HEIGHT[i] * MAX_H;
+
+        // ── Illumination — only this animates ────────────────────────────────
+        let brightness: number;
 
         if (playingRef.current || t > 0) {
-          // Each bar oscillates: primary wave + secondary harmonic for realism
-          // Speed: 2.5 cycles/sec gives natural audio-visualiser feel
-          const wave1 = Math.sin(t * 2.5 * Math.PI * 2 - phi) * 0.5 + 0.5;
-          const wave2 = Math.sin(t * 3.8 * Math.PI * 2 - phi * 1.3) * 0.5 + 0.5;
-          const wave3 = Math.sin(t * 1.2 * Math.PI * 2 - phi * 0.7) * 0.5 + 0.5;
-          // Blend waves — primary drives most of the motion
-          const osc = wave1 * 0.55 + wave2 * 0.25 + wave3 * 0.20;
-          // Apply envelope: centre bars reach full height, edges stay shorter
-          heightFactor = IDLE_H + (env - IDLE_H) * osc;
+          // Multiple soft glowing humps that drift and breathe across the bars.
+          // Each hump has a centre position that oscillates slowly,
+          // and an amplitude that pulses up and down (simulating volume).
+
+          // Hump 1 — slow drift left→right, medium amplitude pulse
+          const centre1 = 0.5 + Math.sin(t * 0.4) * 0.25;
+          const amp1    = 0.55 + Math.sin(t * 1.1 + 0.5) * 0.35;
+          const width1  = 0.35;
+          const dist1   = Math.abs(pos - centre1) / width1;
+          const glow1   = amp1 * Math.exp(-dist1 * dist1 * 2.0);
+
+          // Hump 2 — faster drift, smaller, fills gaps
+          const centre2 = 0.45 + Math.sin(t * 0.7 + 1.2) * 0.30;
+          const amp2    = 0.40 + Math.sin(t * 1.8 + 2.1) * 0.25;
+          const width2  = 0.25;
+          const dist2   = Math.abs(pos - centre2) / width2;
+          const glow2   = amp2 * Math.exp(-dist2 * dist2 * 2.5);
+
+          // Hump 3 — wide, slow breathe — overall ambient lift
+          const amp3  = 0.20 + Math.sin(t * 0.55 + 3.0) * 0.12;
+          const dist3 = Math.abs(pos - 0.5) / 0.55;
+          const glow3 = amp3 * Math.exp(-dist3 * dist3 * 1.5);
+
+          // Combine all humps
+          const totalGlow = Math.min(1, glow1 + glow2 + glow3);
+
+          // Base dim brightness (bars always faintly visible)
+          const base = 0.08 + BAR_HEIGHT[i] * 0.06;
+
+          brightness = base + totalGlow * 0.82;
         } else {
-          // Idle: flat low bars
-          heightFactor = IDLE_H * env;
+          // Idle: bars faintly visible, darker in centre, very subtle
+          brightness = 0.08 + BAR_HEIGHT[i] * 0.10;
         }
 
-        const heightPx = Math.max(2, heightFactor * MAX_H);
+        brightness = Math.max(0, Math.min(1, brightness));
 
-        // Brightness follows height — taller = brighter
-        const brightness = 0.18 + heightFactor * 0.72;
-
-        ctx.fillStyle = `rgba(255,255,255,${Math.min(1, brightness).toFixed(3)})`;
+        ctx.fillStyle = `rgba(255,255,255,${brightness.toFixed(3)})`;
+        // Bottom-anchored, fixed height
         ctx.fillRect(
           i * barW + gap / 2,
-          H - heightPx,   // bottom-anchored
+          H - barH,
           fillW,
-          heightPx
+          barH
         );
       }
     };
@@ -311,8 +325,8 @@ export default function AudioPlayer() {
 
   useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
 
-  const progress  = total > 0 ? displayTime / total : 0;
-  const remaining = Math.max(0, total - Math.floor(displayTime));
+  const progress    = total > 0 ? displayTime / total : 0;
+  const remaining   = Math.max(0, total - Math.floor(displayTime));
   const statusLabel = playing ? "Playing" : displayTime > 0 ? "Paused" : "Stopped";
 
   return (
@@ -370,7 +384,6 @@ export default function AudioPlayer() {
             </span>
           </div>
 
-          {/* Waveform */}
           <Waveform playing={playing} progress={progress} onScrub={scrub} />
 
           {/* Controls */}
