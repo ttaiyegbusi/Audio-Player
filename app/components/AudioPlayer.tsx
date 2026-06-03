@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Pause, Play, Square, ChevronDown, MoreVertical, ScrollText } from "lucide-react";
 import TranscriptDrawer, { TranscriptLine } from "./TranscriptDrawer";
+import Waveform from "./Waveform";
 
 // ─── Skip icons ───────────────────────────────────────────────────────────────
 const SkipBackFilled = () => (
@@ -55,79 +56,9 @@ const TRACKS: Track[] = [
   { id: 20, title: "Champion - Bethel Music", duration: 289, transcript: [{id:1,startTime:0,text:"You are the Lord of all creation"},{id:2,startTime:7,text:"All things were made by You"},gap(3,14),{id:4,startTime:16,text:"God You reign forever"},{id:5,startTime:22,text:"Champion, mighty in battle"}]},
 ];
 
-// ─── Waveform bar heights — fixed shape from spec doc ─────────────────────────
-// Calm intro → main hill peak → secondary bump → quiet tail
-const WAVE_HEIGHTS = [
-  4, 4, 5, 5, 5, 5, 6, 6, 7, 7,
-  8, 9, 11, 14, 18, 23, 28, 32, 33, 31,
-  28, 24, 19, 15, 11, 9, 8, 7, 7, 7,
-  7, 8, 9, 11, 13, 15, 17, 16, 14, 12,
-  10, 8, 7, 6, 6, 6, 6, 6, 6, 6,
-  6, 6, 7, 7, 7, 7, 6, 6, 6, 6,
-  6, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-  5, 5, 5, 5, 4, 4, 4, 4, 4, 4,
-  4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-  4, 4, 4, 4, 4,
-];
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function formatTime(s: number) {
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
-}
-
-// ─── Waveform — CSS-animated bars, spec-accurate ─────────────────────────────
-function Waveform({ playing }: { playing: boolean }) {
-  const NUM = WAVE_HEIGHTS.length;
-  return (
-    <div style={{
-      display: "flex",
-      alignItems: "center",
-      gap: "5px",
-      height: 80,
-      margin: "20px 0",
-      padding: "0 2px",
-    }}>
-      {WAVE_HEIGHTS.map((h, i) => {
-        const isMainPeak    = i >= 13 && i <= 22;
-        const isSecondary   = i >= 32 && i <= 41;
-        const brightness    = isMainPeak ? "#f2f2f2" : isSecondary ? "#e0e0e0" : "#c0c0c0";
-        const glowStrength  = isMainPeak ? "0 0 7px rgba(255,255,255,0.55)" : isSecondary ? "0 0 5px rgba(255,255,255,0.35)" : "0 0 4px rgba(255,255,255,0.25)";
-        const scaleMin      = isMainPeak ? 0.88 : isSecondary ? 0.90 : 0.80;
-        const scaleMax      = isMainPeak ? 1.13 : isSecondary ? 1.20 : 1.30;
-        const dur           = 700 + (i % 9) * 95; // 700ms–1405ms
-        const delay         = i * 18;
-
-        return (
-          <div
-            key={i}
-            style={{
-              width: "4.5px",
-              height: `${h}px`,
-              minHeight: "3px",
-              borderRadius: "999px",
-              background: brightness,
-              boxShadow: glowStrength,
-              filter: "blur(0.15px)",
-              flexShrink: 0,
-              transformOrigin: "center",
-              animation: playing
-                ? `waveBar ${dur}ms ease-in-out ${delay}ms infinite alternate`
-                : "none",
-              "--scale-min": scaleMin,
-              "--scale-max": scaleMax,
-            } as React.CSSProperties}
-          />
-        );
-      })}
-
-      <style>{`
-        @keyframes waveBar {
-          0%   { transform: scaleY(var(--scale-min)); opacity: 0.65; }
-          100% { transform: scaleY(var(--scale-max)); opacity: 1; }
-        }
-      `}</style>
-    </div>
-  );
 }
 
 // ─── Glitch timer ─────────────────────────────────────────────────────────────
@@ -350,14 +281,6 @@ export default function AudioPlayer() {
 
             {/* Waveform */}
             <Waveform playing={playing} />
-
-            {/* Scrub bar underneath waveform */}
-            <div
-              onClick={(e) => { const r = e.currentTarget.getBoundingClientRect(); scrub(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width))); }}
-              style={{ height:3, background:"#2a2a2a", borderRadius:2, marginBottom:20, cursor:"pointer", position:"relative" }}
-            >
-              <div style={{ position:"absolute", left:0, top:0, height:"100%", width:`${progress * 100}%`, background:"#E8470A", borderRadius:2, transition:"width 0.3s linear" }} />
-            </div>
 
             <div style={{ display:"flex", alignItems:"center", gap:8 }}>
               <IconBtn onClick={prev} label="Previous track" playSound={playTock}><SkipBackFilled /></IconBtn>
