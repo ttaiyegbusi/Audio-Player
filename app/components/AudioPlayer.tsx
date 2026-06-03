@@ -38,165 +38,154 @@ const TRACKS: Track[] = [
   { id: 5, title: "All Things New - Theophilus Sunday", duration: 289, transcript: [
     {id:1,startTime:0,text:"Behold I make all things new"},{id:2,startTime:7,text:"The former things have passed away"},{id:3,startTime:14,text:"Behold I make all things new"},gap(4,21),{id:5,startTime:23,text:"Your past does not define you"},{id:6,startTime:29,text:"My grace has now refined you"},{id:7,startTime:35,text:"I have called you by your name"},{id:8,startTime:41,text:"You are mine"},
   ]},
-  { id: 6, title: "No Longer Slaves - Bethel Music", duration: 356, transcript: [
-    {id:1,startTime:0,text:"You unravel me with a melody"},{id:2,startTime:6,text:"You surround me with a song"},{id:3,startTime:12,text:"Of deliverance from my enemies"},{id:4,startTime:18,text:"Till all my fears are gone"},gap(5,24),{id:6,startTime:26,text:"I'm no longer a slave to fear"},{id:7,startTime:32,text:"I am a child of God"},
-  ]},
-  { id: 7, title: "Reckless Love - Cory Asbury", duration: 398, transcript: [
-    {id:1,startTime:0,text:"Before I spoke a word, You were singing over me"},{id:2,startTime:7,text:"You have been so, so good to me"},{id:3,startTime:14,text:"Before I took a breath, You breathed Your life in me"},gap(4,21),{id:5,startTime:23,text:"Oh the overwhelming, never-ending reckless love of God"},{id:6,startTime:31,text:"It chases me down, fights till I'm found"},
-  ]},
-  { id: 8, title: "Goodness of God - Bethel Music", duration: 312, transcript: [
-    {id:1,startTime:0,text:"I love You Lord"},{id:2,startTime:5,text:"Oh Your mercy never fails me"},{id:3,startTime:10,text:"All my days, I've been held in Your hands"},gap(4,16),{id:5,startTime:18,text:"All my life You have been faithful"},{id:6,startTime:24,text:"All my life You have been so, so good"},
-  ]},
-  { id: 9, title: "Oceans - Hillsong United", duration: 445, transcript: [
-    {id:1,startTime:0,text:"You call me out upon the waters"},{id:2,startTime:6,text:"The great unknown where feet may fail"},{id:3,startTime:12,text:"And there I find You in the mystery"},gap(4,18),{id:5,startTime:20,text:"Spirit lead me where my trust is without borders"},{id:6,startTime:27,text:"Let me walk upon the waters"},
-  ]},
-  { id: 10, title: "What a Beautiful Name - Hillsong", duration: 361, transcript: [
-    {id:1,startTime:0,text:"You were the Word at the beginning"},{id:2,startTime:6,text:"One with God the Lord Most High"},{id:3,startTime:12,text:"Your hidden glory in creation"},gap(4,18),{id:5,startTime:20,text:"What a beautiful Name it is"},{id:6,startTime:26,text:"What a beautiful Name it is"},{id:7,startTime:32,text:"The Name of Jesus Christ my King"},
-  ]},
-  { id: 11, title: "King of Kings - Hillsong Worship", duration: 389, transcript: [
-    {id:1,startTime:0,text:"In the darkness we were waiting"},{id:2,startTime:6,text:"Without hope, without light"},{id:3,startTime:12,text:"Till from Heaven You came running"},gap(4,18),{id:5,startTime:20,text:"Praise the Father, praise the Son"},{id:6,startTime:26,text:"Praise the Spirit, three in one"},
-  ]},
-  { id: 12, title: "Do It Again - Elevation Worship", duration: 332, transcript: [
-    {id:1,startTime:0,text:"Walking around these walls"},{id:2,startTime:5,text:"I thought by now they'd fall"},{id:3,startTime:10,text:"But You have never failed me yet"},gap(4,15),{id:5,startTime:17,text:"Your promise still stands"},{id:6,startTime:22,text:"Great is Your faithfulness"},
-  ]},
-  { id: 13, title: "Graves Into Gardens - Elevation", duration: 278, transcript: [
-    {id:1,startTime:0,text:"I searched the world but it couldn't fill me"},{id:2,startTime:7,text:"Man's empty praise and treasures that fade"},{id:3,startTime:14,text:"Are never enough"},gap(4,19),{id:5,startTime:21,text:"You turn mourning to dancing"},{id:6,startTime:27,text:"You give beauty for ashes"},
-  ]},
-  { id: 14, title: "Build My Life - Housefires", duration: 267, transcript: [
-    {id:1,startTime:0,text:"Worthy of every song we could ever sing"},{id:2,startTime:7,text:"Worthy of all the praise we could ever bring"},{id:3,startTime:14,text:"Worthy of every breath we could ever breathe"},gap(4,21),{id:5,startTime:23,text:"I will build my life upon Your love"},{id:6,startTime:29,text:"It is a firm foundation"},
-  ]},
-  { id: 15, title: "Holy Forever - Chris Tomlin", duration: 344, transcript: [
-    {id:1,startTime:0,text:"A thousand generations falling down in worship"},{id:2,startTime:8,text:"To sing the song of ages to the Lamb"},{id:3,startTime:16,text:"And all who've gone before us"},gap(4,22),{id:5,startTime:24,text:"Holy, holy, holy is the Lord Almighty"},{id:6,startTime:31,text:"Who was and is and is to come"},
-  ]},
-  { id: 16, title: "My Testimony - Elevation Worship", duration: 298, transcript: [
-    {id:1,startTime:0,text:"I came from nothing"},{id:2,startTime:5,text:"You called me worthy"},{id:3,startTime:10,text:"Alive for Your glory"},gap(4,15),{id:5,startTime:17,text:"All that I have"},{id:6,startTime:22,text:"All that I am"},{id:7,startTime:27,text:"Here for Your glory"},
-  ]},
-  { id: 17, title: "The Blessing - Kari Jobe", duration: 378, transcript: [
-    {id:1,startTime:0,text:"The Lord bless you and keep you"},{id:2,startTime:7,text:"Make His face shine upon you"},{id:3,startTime:14,text:"And be gracious to you"},gap(4,20),{id:5,startTime:22,text:"The Lord turn His face toward you"},{id:6,startTime:29,text:"And give you peace"},
-  ]},
-  { id: 18, title: "Surrounded - Michael W. Smith", duration: 312, transcript: [
-    {id:1,startTime:0,text:"This is how I fight my battles"},{id:2,startTime:6,text:"It may look like I'm surrounded"},{id:3,startTime:12,text:"But I am surrounded by You"},gap(4,18),{id:5,startTime:20,text:"You are holy, Lord Almighty"},{id:6,startTime:26,text:"Praise the Lord"},
-  ]},
-  { id: 19, title: "Same God - Elevation Worship", duration: 334, transcript: [
-    {id:1,startTime:0,text:"I'm calling on the God of Jacob"},{id:2,startTime:7,text:"Whose love endures through generations"},{id:3,startTime:14,text:"I know that You will keep Your promises"},gap(4,21),{id:5,startTime:23,text:"You're the same God"},{id:6,startTime:28,text:"Yesterday, today and forever"},
-  ]},
-  { id: 20, title: "Champion - Bethel Music", duration: 289, transcript: [
-    {id:1,startTime:0,text:"You are the Lord of all creation"},{id:2,startTime:7,text:"All things were made by You"},{id:3,startTime:14,text:"Before the world was ever spoken"},gap(4,20),{id:5,startTime:22,text:"God You reign forever"},{id:6,startTime:28,text:"Champion, mighty in battle"},
-  ]},
+  { id: 6, title: "No Longer Slaves - Bethel Music", duration: 356, transcript: [{id:1,startTime:0,text:"You unravel me with a melody"},{id:2,startTime:6,text:"You surround me with a song"},{id:3,startTime:12,text:"Of deliverance from my enemies"},{id:4,startTime:18,text:"Till all my fears are gone"},gap(5,24),{id:6,startTime:26,text:"I'm no longer a slave to fear"},{id:7,startTime:32,text:"I am a child of God"}]},
+  { id: 7, title: "Reckless Love - Cory Asbury", duration: 398, transcript: [{id:1,startTime:0,text:"Before I spoke a word, You were singing over me"},{id:2,startTime:7,text:"You have been so, so good to me"},gap(3,14),{id:4,startTime:16,text:"Oh the overwhelming, never-ending reckless love of God"},{id:5,startTime:24,text:"It chases me down, fights till I'm found"}]},
+  { id: 8, title: "Goodness of God - Bethel Music", duration: 312, transcript: [{id:1,startTime:0,text:"I love You Lord"},{id:2,startTime:5,text:"Oh Your mercy never fails me"},{id:3,startTime:10,text:"All my days, I've been held in Your hands"},gap(4,16),{id:5,startTime:18,text:"All my life You have been faithful"},{id:6,startTime:24,text:"All my life You have been so, so good"}]},
+  { id: 9, title: "Oceans - Hillsong United", duration: 445, transcript: [{id:1,startTime:0,text:"You call me out upon the waters"},{id:2,startTime:6,text:"The great unknown where feet may fail"},{id:3,startTime:12,text:"And there I find You in the mystery"},gap(4,18),{id:5,startTime:20,text:"Spirit lead me where my trust is without borders"},{id:6,startTime:27,text:"Let me walk upon the waters"}]},
+  { id: 10, title: "What a Beautiful Name - Hillsong", duration: 361, transcript: [{id:1,startTime:0,text:"You were the Word at the beginning"},{id:2,startTime:6,text:"One with God the Lord Most High"},gap(3,12),{id:4,startTime:14,text:"What a beautiful Name it is"},{id:5,startTime:20,text:"The Name of Jesus Christ my King"}]},
+  { id: 11, title: "King of Kings - Hillsong Worship", duration: 389, transcript: [{id:1,startTime:0,text:"In the darkness we were waiting"},{id:2,startTime:6,text:"Without hope, without light"},{id:3,startTime:12,text:"Till from Heaven You came running"},gap(4,18),{id:5,startTime:20,text:"Praise the Father, praise the Son"},{id:6,startTime:26,text:"Praise the Spirit, three in one"}]},
+  { id: 12, title: "Do It Again - Elevation Worship", duration: 332, transcript: [{id:1,startTime:0,text:"Walking around these walls"},{id:2,startTime:5,text:"I thought by now they'd fall"},{id:3,startTime:10,text:"But You have never failed me yet"},gap(4,15),{id:5,startTime:17,text:"Your promise still stands"},{id:6,startTime:22,text:"Great is Your faithfulness"}]},
+  { id: 13, title: "Graves Into Gardens - Elevation", duration: 278, transcript: [{id:1,startTime:0,text:"I searched the world but it couldn't fill me"},{id:2,startTime:7,text:"Man's empty praise and treasures that fade"},gap(3,14),{id:4,startTime:16,text:"You turn mourning to dancing"},{id:5,startTime:22,text:"You give beauty for ashes"}]},
+  { id: 14, title: "Build My Life - Housefires", duration: 267, transcript: [{id:1,startTime:0,text:"Worthy of every song we could ever sing"},{id:2,startTime:7,text:"Worthy of all the praise we could ever bring"},gap(3,14),{id:4,startTime:16,text:"I will build my life upon Your love"},{id:5,startTime:22,text:"It is a firm foundation"}]},
+  { id: 15, title: "Holy Forever - Chris Tomlin", duration: 344, transcript: [{id:1,startTime:0,text:"A thousand generations falling down in worship"},{id:2,startTime:8,text:"To sing the song of ages to the Lamb"},gap(3,16),{id:4,startTime:18,text:"Holy, holy, holy is the Lord Almighty"},{id:5,startTime:25,text:"Who was and is and is to come"}]},
+  { id: 16, title: "My Testimony - Elevation Worship", duration: 298, transcript: [{id:1,startTime:0,text:"I came from nothing"},{id:2,startTime:5,text:"You called me worthy"},{id:3,startTime:10,text:"Alive for Your glory"},gap(4,15),{id:5,startTime:17,text:"All that I have"},{id:6,startTime:22,text:"Here for Your glory"}]},
+  { id: 17, title: "The Blessing - Kari Jobe", duration: 378, transcript: [{id:1,startTime:0,text:"The Lord bless you and keep you"},{id:2,startTime:7,text:"Make His face shine upon you"},{id:3,startTime:14,text:"And be gracious to you"},gap(4,20),{id:5,startTime:22,text:"The Lord turn His face toward you"},{id:6,startTime:29,text:"And give you peace"}]},
+  { id: 18, title: "Surrounded - Michael W. Smith", duration: 312, transcript: [{id:1,startTime:0,text:"This is how I fight my battles"},{id:2,startTime:6,text:"It may look like I'm surrounded"},{id:3,startTime:12,text:"But I am surrounded by You"},gap(4,18),{id:5,startTime:20,text:"Praise the Lord"}]},
+  { id: 19, title: "Same God - Elevation Worship", duration: 334, transcript: [{id:1,startTime:0,text:"I'm calling on the God of Jacob"},{id:2,startTime:7,text:"Whose love endures through generations"},gap(3,14),{id:4,startTime:16,text:"You're the same God"},{id:5,startTime:21,text:"Yesterday, today and forever"}]},
+  { id: 20, title: "Champion - Bethel Music", duration: 289, transcript: [{id:1,startTime:0,text:"You are the Lord of all creation"},{id:2,startTime:7,text:"All things were made by You"},gap(3,14),{id:4,startTime:16,text:"God You reign forever"},{id:5,startTime:22,text:"Champion, mighty in battle"}]},
 ];
 
-// ─── Waveform ─────────────────────────────────────────────────────────────────
-const NUM_BARS = 130;
-const BAR_HEIGHT: number[] = Array.from({ length: NUM_BARS }, (_, i) => {
-  const t = i / (NUM_BARS - 1);
-  const bell = Math.exp(-Math.pow((t - 0.5) * 2.5, 2));
-  const d = Math.abs(Math.sin(i * 0.61 + 1.0)) * 0.18 + Math.abs(Math.sin(i * 1.33 + 0.5)) * 0.12 + Math.abs(Math.sin(i * 0.27 + 2.3)) * 0.08;
-  return Math.max(0.05, Math.min(1, bell * (0.72 + d)));
-});
+// ─── Waveform bar heights — fixed shape from spec doc ─────────────────────────
+// Calm intro → main hill peak → secondary bump → quiet tail
+const WAVE_HEIGHTS = [
+  4, 4, 5, 5, 5, 5, 6, 6, 7, 7,
+  8, 9, 11, 14, 18, 23, 28, 32, 33, 31,
+  28, 24, 19, 15, 11, 9, 8, 7, 7, 7,
+  7, 8, 9, 11, 13, 15, 17, 16, 14, 12,
+  10, 8, 7, 6, 6, 6, 6, 6, 6, 6,
+  6, 6, 7, 7, 7, 7, 6, 6, 6, 6,
+  6, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+  5, 5, 5, 5, 4, 4, 4, 4, 4, 4,
+  4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+  4, 4, 4, 4, 4,
+];
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function formatTime(s: number) {
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 }
 
-// ─── Glitch timer — only glitches on trackIndex change, not on time tick ──────
+// ─── Waveform — CSS-animated bars, spec-accurate ─────────────────────────────
+function Waveform({ playing }: { playing: boolean }) {
+  const NUM = WAVE_HEIGHTS.length;
+  return (
+    <div style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "5px",
+      height: 80,
+      margin: "20px 0",
+      padding: "0 2px",
+    }}>
+      {WAVE_HEIGHTS.map((h, i) => {
+        const isMainPeak    = i >= 13 && i <= 22;
+        const isSecondary   = i >= 32 && i <= 41;
+        const brightness    = isMainPeak ? "#f2f2f2" : isSecondary ? "#e0e0e0" : "#c0c0c0";
+        const glowStrength  = isMainPeak ? "0 0 7px rgba(255,255,255,0.55)" : isSecondary ? "0 0 5px rgba(255,255,255,0.35)" : "0 0 4px rgba(255,255,255,0.25)";
+        const scaleMin      = isMainPeak ? 0.88 : isSecondary ? 0.90 : 0.80;
+        const scaleMax      = isMainPeak ? 1.13 : isSecondary ? 1.20 : 1.30;
+        const dur           = 700 + (i % 9) * 95; // 700ms–1405ms
+        const delay         = i * 18;
+
+        return (
+          <div
+            key={i}
+            style={{
+              width: "4.5px",
+              height: `${h}px`,
+              minHeight: "3px",
+              borderRadius: "999px",
+              background: brightness,
+              boxShadow: glowStrength,
+              filter: "blur(0.15px)",
+              flexShrink: 0,
+              transformOrigin: "center",
+              animation: playing
+                ? `waveBar ${dur}ms ease-in-out ${delay}ms infinite alternate`
+                : "none",
+              "--scale-min": scaleMin,
+              "--scale-max": scaleMax,
+            } as React.CSSProperties}
+          />
+        );
+      })}
+
+      <style>{`
+        @keyframes waveBar {
+          0%   { transform: scaleY(var(--scale-min)); opacity: 0.65; }
+          100% { transform: scaleY(var(--scale-max)); opacity: 1; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// ─── Glitch timer ─────────────────────────────────────────────────────────────
 function GlitchTimer({ time, trackIndex }: { time: string; trackIndex: number }) {
   const [display, setDisplay] = useState(time);
   const [glitching, setGlitching] = useState(false);
   const prevIndex = useRef(trackIndex);
   const rafRef = useRef<number>(0);
 
-  // Update display quietly during normal playback
-  useEffect(() => {
-    if (!glitching) setDisplay(time);
-  }, [time, glitching]);
+  useEffect(() => { if (!glitching) setDisplay(time); }, [time, glitching]);
 
-  // Only trigger glitch on track change
   useEffect(() => {
     if (trackIndex === prevIndex.current) return;
     prevIndex.current = trackIndex;
-
     setGlitching(true);
     const chars = "0123456789";
     const startTs = performance.now();
     const duration = 600;
-
     const tick = (ts: number) => {
-      const elapsed = ts - startTs;
-      const progress = Math.min(1, elapsed / duration);
+      const progress = Math.min(1, (ts - startTs) / duration);
       const target = time;
-
       const result = target.split("").map((char, i) => {
         if (char === ":") return ":";
-        const charProgress = Math.max(0, (progress - i * 0.15));
-        if (charProgress >= 1) return char;
+        const cp = Math.max(0, progress - i * 0.15);
+        if (cp >= 1) return char;
         return chars[Math.floor(Math.random() * chars.length)];
       }).join("");
-
       setDisplay(result);
-
-      if (progress < 1) {
-        rafRef.current = requestAnimationFrame(tick);
-      } else {
-        setDisplay(target);
-        setGlitching(false);
-      }
+      if (progress < 1) { rafRef.current = requestAnimationFrame(tick); }
+      else { setDisplay(target); setGlitching(false); }
     };
-
     cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
   }, [trackIndex]); // eslint-disable-line
 
   return (
-    <span style={{
-      fontSize: 52, fontWeight: 600, color: "#ffffff",
-      letterSpacing: "0.04em", lineHeight: 1,
-      fontVariantNumeric: "tabular-nums",
-      fontFamily: "'IBM Plex Sans', sans-serif",
-      filter: glitching ? "blur(0.5px)" : "none",
-      transition: "filter 0.1s",
-    }}>
+    <span style={{ fontSize: 52, fontWeight: 600, color: "#ffffff", letterSpacing: "0.04em", lineHeight: 1, fontVariantNumeric: "tabular-nums", fontFamily: "'IBM Plex Sans', sans-serif", filter: glitching ? "blur(0.5px)" : "none", transition: "filter 0.1s" }}>
       {display}
     </span>
   );
 }
 
-// ─── Animated track title ─────────────────────────────────────────────────────
+// ─── Animated title ───────────────────────────────────────────────────────────
 function AnimatedTitle({ title, direction }: { title: string; direction: "left" | "right" }) {
   const [displayed, setDisplayed] = useState(title);
-  const [animState, setAnimState] = useState<"idle" | "exit" | "enter">("idle");
+  const [animState, setAnimState] = useState<"idle"|"exit"|"enter">("idle");
   const prevTitle = useRef(title);
-
   useEffect(() => {
     if (title === prevTitle.current) return;
     prevTitle.current = title;
     setAnimState("exit");
-    setTimeout(() => {
-      setDisplayed(title);
-      setAnimState("enter");
-      setTimeout(() => setAnimState("idle"), 350);
-    }, 200);
+    setTimeout(() => { setDisplayed(title); setAnimState("enter"); setTimeout(() => setAnimState("idle"), 350); }, 200);
   }, [title]);
-
-  const transforms: Record<string, string> = {
-    idle:  "translateX(0px)",
-    exit:  direction === "right" ? "translateX(-28px)" : "translateX(28px)",
-    enter: direction === "right" ? "translateX(20px)"  : "translateX(-20px)",
-  };
-  const opacities: Record<string, number> = { idle: 1, exit: 0, enter: 0 };
-
+  const transforms: Record<string,string> = { idle:"translateX(0px)", exit: direction==="right"?"translateX(-28px)":"translateX(28px)", enter: direction==="right"?"translateX(20px)":"translateX(-20px)" };
+  const opacities: Record<string,number> = { idle:1, exit:0, enter:0 };
   return (
-    <span style={{
-      fontSize: 17, fontWeight: 400, color: "#ffffff",
-      letterSpacing: "-0.01em", lineHeight: 1.2, display: "block",
-      transform: transforms[animState],
-      opacity: opacities[animState] ?? 1,
-      transition: animState === "exit"
-        ? "transform 0.2s cubic-bezier(0.4,0,1,1), opacity 0.15s ease"
-        : animState === "idle"
-        ? "transform 0.38s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease"
-        : "none",
-    }}>
+    <span style={{ fontSize:17, fontWeight:400, color:"#ffffff", letterSpacing:"-0.01em", lineHeight:1.2, display:"block", transform:transforms[animState], opacity:opacities[animState]??1, transition: animState==="exit"?"transform 0.2s cubic-bezier(0.4,0,1,1), opacity 0.15s ease":animState==="idle"?"transform 0.38s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease":"none" }}>
       {displayed}
     </span>
   );
@@ -227,54 +216,26 @@ function useClickSound() {
   }, [getCtx]);
 }
 
-// ─── Tick sound — soft mechanical click every second ─────────────────────────
+// ─── Tick sound ───────────────────────────────────────────────────────────────
 function useTickSound() {
   const ctxRef = useRef<AudioContext | null>(null);
   const getCtx = useCallback(() => {
     if (!ctxRef.current) ctxRef.current = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
     return ctxRef.current;
   }, []);
-
   return useCallback(() => {
     try {
-      const ctx = getCtx();
-      const now = ctx.currentTime;
-
-      // Very short filtered noise burst — the mechanical "click" transient
+      const ctx = getCtx(); const now = ctx.currentTime;
       const bufSize = Math.floor(ctx.sampleRate * 0.018);
       const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
       const data = buf.getChannelData(0);
-      for (let i = 0; i < bufSize; i++) {
-        // Exponential decay envelope on noise
-        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.12));
-      }
-      const noise = ctx.createBufferSource();
-      noise.buffer = buf;
-
-      // Bandpass filter — shapes noise into a tight mechanical click
-      const bp = ctx.createBiquadFilter();
-      bp.type = "bandpass";
-      bp.frequency.value = 2800;
-      bp.Q.value = 1.4;
-
-      // Low shelf to add a touch of body without muddiness
-      const shelf = ctx.createBiquadFilter();
-      shelf.type = "lowshelf";
-      shelf.frequency.value = 300;
-      shelf.gain.value = -6;
-
-      // Master gain — very quiet, 10% of button click volume
-      const master = ctx.createGain();
-      master.gain.setValueAtTime(0.055, now);
-      master.gain.exponentialRampToValueAtTime(0.001, now + 0.018);
-
-      noise.connect(bp);
-      bp.connect(shelf);
-      shelf.connect(master);
-      master.connect(ctx.destination);
-
-      noise.start(now);
-      noise.stop(now + 0.02);
+      for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.12));
+      const noise = ctx.createBufferSource(); noise.buffer = buf;
+      const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 2800; bp.Q.value = 1.4;
+      const shelf = ctx.createBiquadFilter(); shelf.type = "lowshelf"; shelf.frequency.value = 300; shelf.gain.value = -6;
+      const master = ctx.createGain(); master.gain.setValueAtTime(0.055, now); master.gain.exponentialRampToValueAtTime(0.001, now + 0.018);
+      noise.connect(bp); bp.connect(shelf); shelf.connect(master); master.connect(ctx.destination);
+      noise.start(now); noise.stop(now + 0.02);
     } catch { /* ignore */ }
   }, [getCtx]);
 }
@@ -301,7 +262,7 @@ function AnimatedPanel({ open, children, style }: { open: boolean; children: Rea
   const spring = useSpring(open); const ref = useRef<HTMLDivElement>(null); const [h, setH] = useState(0);
   useEffect(() => { if (ref.current) setH(ref.current.scrollHeight); }, [open]);
   return (
-    <div style={{ overflow: "hidden", height: spring * h, opacity: 0.15 + spring * 0.85, transform: `translateY(${(1 - spring) * -8}px)`, ...style }}>
+    <div style={{ overflow:"hidden", height:spring*h, opacity:0.15+spring*0.85, transform:`translateY(${(1-spring)*-8}px)`, ...style }}>
       <div ref={ref}>{children}</div>
     </div>
   );
@@ -314,54 +275,8 @@ function IconBtn({ onClick, label, children, playSound }: { onClick?: () => void
     <button onClick={() => { playSound?.(); onClick?.(); }} aria-label={label}
       onMouseEnter={() => setHovered(true)} onMouseLeave={() => { setHovered(false); setPressed(false); }}
       onMouseDown={() => setPressed(true)} onMouseUp={() => setPressed(false)}
-      style={{ width: 48, height: 48, borderRadius: 10, background: hovered ? "#252525" : "#1C1C1C", border: "none", color: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, transform: pressed ? "scale(0.91)" : "scale(1)", transitionProperty: "background, transform", transitionDuration: pressed ? "0.05s" : "0.35s", transitionTimingFunction: "cubic-bezier(0.34, 1.56, 0.64, 1)" }}
+      style={{ width:48, height:48, borderRadius:10, background:hovered?"#252525":"#1C1C1C", border:"none", color:"#ffffff", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", flexShrink:0, transform:pressed?"scale(0.91)":"scale(1)", transitionProperty:"background, transform", transitionDuration:pressed?"0.05s":"0.35s", transitionTimingFunction:"cubic-bezier(0.34, 1.56, 0.64, 1)" }}
     >{children}</button>
-  );
-}
-
-// ─── Waveform ─────────────────────────────────────────────────────────────────
-function Waveform({ playing, progress, onScrub }: { playing: boolean; progress: number; onScrub: (p: number) => void }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null); const containerRef = useRef<HTMLDivElement>(null);
-  const rafRef = useRef<number>(0); const tRef = useRef(0); const lastTsRef = useRef<number | null>(null); const playingRef = useRef(playing);
-  useEffect(() => { playingRef.current = playing; }, [playing]);
-  useEffect(() => {
-    const canvas = canvasRef.current; const container = containerRef.current; if (!canvas || !container) return;
-    const dpr = window.devicePixelRatio || 1; const rect = container.getBoundingClientRect();
-    canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
-    canvas.style.width = rect.width + "px"; canvas.style.height = rect.height + "px";
-    const ctx = canvas.getContext("2d"); if (ctx) ctx.scale(dpr, dpr);
-  }, []);
-  useEffect(() => {
-    const canvas = canvasRef.current; if (!canvas) return;
-    const draw = (ts: number) => {
-      rafRef.current = requestAnimationFrame(draw);
-      const ctx = canvas.getContext("2d"); if (!ctx) return;
-      const dpr = window.devicePixelRatio || 1; const W = canvas.width / dpr; const H = canvas.height / dpr;
-      if (playingRef.current) { if (lastTsRef.current !== null) tRef.current += (ts - lastTsRef.current) / 1000; lastTsRef.current = ts; } else { lastTsRef.current = null; }
-      const t = tRef.current; const MAX_H = H - 4; ctx.clearRect(0, 0, W, H);
-      const barW = W / NUM_BARS; const gapPx = 1.5; const fillW = Math.max(1, barW - gapPx);
-      for (let i = 0; i < NUM_BARS; i++) {
-        const pos = i / (NUM_BARS - 1); const barH = BAR_HEIGHT[i] * MAX_H; let brightness: number;
-        if (playingRef.current || t > 0) {
-          const c1 = 0.5 + Math.sin(t * 0.4) * 0.25; const a1 = 0.55 + Math.sin(t * 1.1 + 0.5) * 0.35;
-          const g1 = a1 * Math.exp(-Math.pow(Math.abs(pos - c1) / 0.35, 2) * 2.0);
-          const c2 = 0.45 + Math.sin(t * 0.7 + 1.2) * 0.30; const a2 = 0.40 + Math.sin(t * 1.8 + 2.1) * 0.25;
-          const g2 = a2 * Math.exp(-Math.pow(Math.abs(pos - c2) / 0.25, 2) * 2.5);
-          const a3 = 0.20 + Math.sin(t * 0.55 + 3.0) * 0.12;
-          const g3 = a3 * Math.exp(-Math.pow(Math.abs(pos - 0.5) / 0.55, 2) * 1.5);
-          brightness = Math.min(1, 0.08 + BAR_HEIGHT[i] * 0.06 + Math.min(1, g1 + g2 + g3) * 0.82);
-        } else { brightness = 0.08 + BAR_HEIGHT[i] * 0.10; }
-        ctx.fillStyle = `rgba(255,255,255,${brightness.toFixed(3)})`; ctx.fillRect(i * barW + gapPx / 2, H - barH, fillW, barH);
-      }
-    };
-    rafRef.current = requestAnimationFrame(draw); return () => cancelAnimationFrame(rafRef.current);
-  }, []);
-  return (
-    <div ref={containerRef} onClick={(e) => { const r = e.currentTarget.getBoundingClientRect(); onScrub(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width))); }}
-      role="progressbar" aria-valuenow={Math.round(progress * 100)} aria-valuemin={0} aria-valuemax={100}
-      style={{ height: 120, margin: "18px 0 20px", cursor: "pointer", width: "100%" }}>
-      <canvas ref={canvasRef} style={{ display: "block" }} />
-    </div>
   );
 }
 
@@ -372,7 +287,7 @@ export default function AudioPlayer() {
   const [playing, setPlaying] = useState(false);
   const [showLyrics, setShowLyrics] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
-  const [skipDir, setSkipDir] = useState<"left" | "right">("right");
+  const [skipDir, setSkipDir] = useState<"left"|"right">("right");
 
   const elapsedRef = useRef(0); const startTsRef = useRef<number | null>(null);
   const rafRef = useRef<number>(0); const playingRef = useRef(false);
@@ -394,7 +309,7 @@ export default function AudioPlayer() {
   const play = useCallback(() => { playingRef.current = true; startTsRef.current = null; setPlaying(true); rafRef.current = requestAnimationFrame(tick); }, [tick]);
   const pause = useCallback(() => { elapsedRef.current = displayTime; playingRef.current = false; startTsRef.current = null; cancelAnimationFrame(rafRef.current); setPlaying(false); }, [displayTime]);
   const stop = useCallback(() => { playingRef.current = false; startTsRef.current = null; elapsedRef.current = 0; lastSecRef.current = -1; cancelAnimationFrame(rafRef.current); setPlaying(false); setDisplayTime(0); }, []);
-  const skipTo = useCallback((idx: number, dir: "left" | "right") => { stop(); setSkipDir(dir); setTrackIndex(idx); }, [stop]);
+  const skipTo = useCallback((idx: number, dir: "left"|"right") => { stop(); setSkipDir(dir); setTrackIndex(idx); }, [stop]);
   const prev = () => { playTock(); skipTo((trackIndex - 1 + TRACKS.length) % TRACKS.length, "left"); };
   const next = () => { playTock(); skipTo((trackIndex + 1) % TRACKS.length, "right"); };
   const scrub = (pct: number) => {
@@ -409,77 +324,83 @@ export default function AudioPlayer() {
 
   return (
     <>
-      <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", width: "100%", maxWidth: 820, margin: "0 auto", userSelect: "none" }}>
-        <div style={{ display: "flex" }}>
+      <div style={{ fontFamily:"'IBM Plex Sans', sans-serif", width:"100%", maxWidth:820, margin:"0 auto", userSelect:"none" }}>
+        <div style={{ display:"flex" }}>
           <button onClick={() => { playTock(); setShowLyrics(true); }}
             onMouseDown={(e) => ((e.currentTarget as HTMLButtonElement).style.transform = "scale(0.96)")}
             onMouseUp={(e) => ((e.currentTarget as HTMLButtonElement).style.transform = "scale(1)")}
             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; (e.currentTarget as HTMLButtonElement).style.background = "#1C1C1C"; }}
-            style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 20px", background: "#1C1C1C", border: "none", borderRadius: "12px 12px 0 0", color: "#ffffff", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 15, fontWeight: 400, letterSpacing: "0.01em", cursor: "pointer", whiteSpace: "nowrap", transition: "background 0.15s, transform 0.35s cubic-bezier(0.34,1.56,0.64,1)", transformOrigin: "bottom center" }}
+            style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 20px", background:"#1C1C1C", border:"none", borderRadius:"12px 12px 0 0", color:"#ffffff", fontFamily:"'IBM Plex Sans', sans-serif", fontSize:15, fontWeight:400, letterSpacing:"0.01em", cursor:"pointer", whiteSpace:"nowrap", transition:"background 0.15s, transform 0.35s cubic-bezier(0.34,1.56,0.64,1)", transformOrigin:"bottom center" }}
             onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "#242424")}
           ><ScrollText size={17} strokeWidth={1.5} /> View Lyrics</button>
         </div>
 
-        <div style={{ display: "flex", alignItems: "stretch", gap: 10 }}>
-          <div style={{ flex: 1, minWidth: 0, background: "#171717", borderRadius: "0 12px 12px 12px", padding: "22px 24px 20px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: 7, overflow: "hidden", flex: 1, marginRight: 16 }}>
+        <div style={{ display:"flex", alignItems:"stretch", gap:10 }}>
+          <div style={{ flex:1, minWidth:0, background:"#171717", borderRadius:"0 12px 12px 12px", padding:"22px 24px 20px" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+              <div style={{ display:"flex", flexDirection:"column", gap:7, overflow:"hidden", flex:1, marginRight:16 }}>
                 <AnimatedTitle title={track.title} direction={skipDir} />
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#E8470A", display: "inline-block", flexShrink: 0, animation: playing ? "pulseDot 1.6s ease-in-out infinite" : "none" }} />
-                  <span style={{ fontSize: 14, fontWeight: 400, color: "#BDBDBD", letterSpacing: "0.01em" }}>{statusLabel}</span>
+                <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                  <span style={{ width:8, height:8, borderRadius:"50%", background:"#E8470A", display:"inline-block", flexShrink:0, animation:playing?"pulseDot 1.6s ease-in-out infinite":"none" }} />
+                  <span style={{ fontSize:14, fontWeight:400, color:"#BDBDBD", letterSpacing:"0.01em" }}>{statusLabel}</span>
                 </div>
               </div>
               <GlitchTimer time={formatTime(remaining)} trackIndex={trackIndex} />
             </div>
-            <Waveform playing={playing} progress={progress} onScrub={scrub} />
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+
+            {/* Waveform */}
+            <Waveform playing={playing} />
+
+            {/* Scrub bar underneath waveform */}
+            <div
+              onClick={(e) => { const r = e.currentTarget.getBoundingClientRect(); scrub(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width))); }}
+              style={{ height:3, background:"#2a2a2a", borderRadius:2, marginBottom:20, cursor:"pointer", position:"relative" }}
+            >
+              <div style={{ position:"absolute", left:0, top:0, height:"100%", width:`${progress * 100}%`, background:"#E8470A", borderRadius:2, transition:"width 0.3s linear" }} />
+            </div>
+
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
               <IconBtn onClick={prev} label="Previous track" playSound={playTock}><SkipBackFilled /></IconBtn>
               <IconBtn onClick={next} label="Next track" playSound={playTock}><SkipForwardFilled /></IconBtn>
-              <div style={{ flex: 1 }} />
-              <IconBtn onClick={playing ? pause : play} label={playing ? "Pause" : "Play"} playSound={playTock}>
+              <div style={{ flex:1 }} />
+              <IconBtn onClick={playing ? pause : play} label={playing?"Pause":"Play"} playSound={playTock}>
                 {playing ? <Pause size={20} fill="white" strokeWidth={0} /> : <Play size={20} fill="white" strokeWidth={0} />}
               </IconBtn>
               <button onClick={() => { playTock(); stop(); }}
                 onMouseDown={(e) => ((e.currentTarget as HTMLButtonElement).style.transform = "scale(0.93)")}
                 onMouseUp={(e) => ((e.currentTarget as HTMLButtonElement).style.transform = "scale(1)")}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; (e.currentTarget as HTMLButtonElement).style.background = "#ffffff"; }}
-                style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 20px", height: 48, borderRadius: 10, background: "#ffffff", border: "none", color: "#111111", fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 15, fontWeight: 600, letterSpacing: "0.01em", cursor: "pointer", flexShrink: 0, transition: "background 0.15s, transform 0.35s cubic-bezier(0.34,1.56,0.64,1)" }}
+                style={{ display:"flex", alignItems:"center", gap:10, padding:"0 20px", height:48, borderRadius:10, background:"#ffffff", border:"none", color:"#111111", fontFamily:"'IBM Plex Sans', sans-serif", fontSize:15, fontWeight:600, letterSpacing:"0.01em", cursor:"pointer", flexShrink:0, transition:"background 0.15s, transform 0.35s cubic-bezier(0.34,1.56,0.64,1)" }}
                 onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "#f0f0f0")}
               >Stop <Square size={14} fill="#E8470A" color="#E8470A" strokeWidth={0} /></button>
             </div>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+
+          <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
             <IconBtn onClick={() => setShowQueue(v => !v)} label="Toggle queue" playSound={playTock}>
-              <ChevronDown size={20} strokeWidth={1.5} style={{ transform: showQueue ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.45s cubic-bezier(0.34,1.56,0.64,1)" }} />
+              <ChevronDown size={20} strokeWidth={1.5} style={{ transform:showQueue?"rotate(180deg)":"rotate(0deg)", transition:"transform 0.45s cubic-bezier(0.34,1.56,0.64,1)" }} />
             </IconBtn>
             <IconBtn label="More options" playSound={playTock}><MoreVertical size={20} strokeWidth={1.5} /></IconBtn>
           </div>
         </div>
 
-        {/* Queue — scrollable, fixed max height */}
-        <AnimatedPanel open={showQueue} style={{ marginRight: 58 }}>
-          <div style={{ background: "#171717", borderRadius: "0 0 12px 0" }}>
-            <div style={{ padding: "16px 24px 8px" }}>
-              <p style={{ fontSize: 11, fontWeight: 600, color: "#BDBDBD", letterSpacing: "0.12em", textTransform: "uppercase", margin: 0 }}>
-                Queue <span style={{ color: "#444", fontWeight: 400 }}>— {TRACKS.length} songs</span>
-              </p>
+        <AnimatedPanel open={showQueue} style={{ marginRight:58 }}>
+          <div style={{ background:"#171717", borderRadius:"0 0 12px 0" }}>
+            <div style={{ padding:"16px 24px 8px" }}>
+              <p style={{ fontSize:11, fontWeight:600, color:"#BDBDBD", letterSpacing:"0.12em", textTransform:"uppercase", margin:0 }}>Queue <span style={{ color:"#444", fontWeight:400 }}>— {TRACKS.length} songs</span></p>
             </div>
-            {/* Scrollable list */}
-            <div style={{ maxHeight: 320, overflowY: "auto", padding: "0 24px 16px", scrollbarWidth: "thin", scrollbarColor: "#2a2a2a transparent" }}>
+            <div style={{ maxHeight:320, overflowY:"auto", padding:"0 24px 16px", scrollbarWidth:"thin", scrollbarColor:"#2a2a2a transparent" }}>
               {TRACKS.map((t, i) => (
                 <div key={t.id} onClick={() => { playTock(); skipTo(i, i > trackIndex ? "right" : "left"); }}
-                  style={{ display: "flex", alignItems: "center", gap: 14, padding: "9px 10px", borderRadius: 8, cursor: "pointer", background: i === trackIndex ? "#1C1C1C" : "transparent", transition: "background 0.15s" }}
+                  style={{ display:"flex", alignItems:"center", gap:14, padding:"9px 10px", borderRadius:8, cursor:"pointer", background:i===trackIndex?"#1C1C1C":"transparent", transition:"background 0.15s" }}
                   onMouseEnter={(e) => { if (i !== trackIndex) (e.currentTarget as HTMLDivElement).style.background = "#1a1a1a"; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = i === trackIndex ? "#1C1C1C" : "transparent"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = i===trackIndex?"#1C1C1C":"transparent"; }}
                 >
-                  <div style={{ width: 18, textAlign: "center", flexShrink: 0, fontSize: 13, color: "#BDBDBD", fontVariantNumeric: "tabular-nums" }}>
-                    {i === trackIndex && playing
-                      ? <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#E8470A", display: "inline-block", animation: "pulseDot 1.6s ease-in-out infinite" }} />
-                      : i + 1}
+                  <div style={{ width:18, textAlign:"center", flexShrink:0, fontSize:13, color:"#BDBDBD", fontVariantNumeric:"tabular-nums" }}>
+                    {i===trackIndex && playing ? <span style={{ width:7, height:7, borderRadius:"50%", background:"#E8470A", display:"inline-block", animation:"pulseDot 1.6s ease-in-out infinite" }} /> : i+1}
                   </div>
-                  <span style={{ flex: 1, fontSize: 14, fontWeight: i === trackIndex ? 500 : 400, color: i === trackIndex ? "#ffffff" : "#BDBDBD", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.title}</span>
-                  <span style={{ fontSize: 13, color: "#BDBDBD", fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{formatTime(t.duration)}</span>
+                  <span style={{ flex:1, fontSize:14, fontWeight:i===trackIndex?500:400, color:i===trackIndex?"#ffffff":"#BDBDBD", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{t.title}</span>
+                  <span style={{ fontSize:13, color:"#BDBDBD", fontVariantNumeric:"tabular-nums", flexShrink:0 }}>{formatTime(t.duration)}</span>
                 </div>
               ))}
             </div>
