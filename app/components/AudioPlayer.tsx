@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Pause, Play, Square, ChevronDown, MoreVertical, ScrollText,
-  Gauge, Bookmark, Share2, Copy, Trash2
+  Gauge, Bookmark, Share2, Trash2, Copy
 } from "lucide-react";
 import TranscriptDrawer, { TranscriptLine } from "./TranscriptDrawer";
 import Waveform from "./Waveform";
@@ -542,71 +542,146 @@ function SpeedBtn({ speed, onClick, active }: { speed: number; onClick: () => vo
   );
 }
 
-// ─── Stacked side menu ────────────────────────────────────────────────────────
+// ─── Side menu — chevron top, ⋮ below, options cascade DOWN from ⋮ ───────────
 function SideMenu({
-  showQueue, setShowQueue, playTock, speed, setSpeed, onBookmark, onShare, onCopy, onDelete,
+  showQueue, setShowQueue, playTock, speed, setSpeed, onBookmark, onShare,
 }: {
   showQueue: boolean; setShowQueue: (v: boolean) => void;
   playTock: () => void; speed: number; setSpeed: (s: number) => void;
-  onBookmark: () => void; onShare: () => void; onCopy: () => void; onDelete: () => void;
+  onBookmark: () => void; onShare: () => void;
 }) {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen]   = useState(false);
   const [speedOpen, setSpeedOpen] = useState(false);
 
-  // Spring values for each extra button — they stack vertically below ⋮
-  const s1 = useSpring(menuOpen);
-  const s2 = useSpring(menuOpen);
-  const s3 = useSpring(menuOpen);
-  const s4 = useSpring(menuOpen);
-  const s5 = useSpring(menuOpen);
+  // Individual springs per item — staggered targets via delay trick
+  const [item1Open, setItem1Open] = useState(false);
+  const [item2Open, setItem2Open] = useState(false);
+  const [item3Open, setItem3Open] = useState(false);
+  const [spd1Open, setSpd1Open]   = useState(false);
+  const [spd2Open, setSpd2Open]   = useState(false);
+  const [spd3Open, setSpd3Open]   = useState(false);
+
+  const sp1 = useSpring(item1Open);
+  const sp2 = useSpring(item2Open);
+  const sp3 = useSpring(item3Open);
+  const ss1 = useSpring(spd1Open);
+  const ss2 = useSpring(spd2Open);
+  const ss3 = useSpring(spd3Open);
+
+  // Open: cascade down with staggered delays
+  const openMenu = useCallback(() => {
+    setItem1Open(true);
+    setTimeout(() => setItem2Open(true), 50);
+    setTimeout(() => setItem3Open(true), 100);
+  }, []);
+
+  // Close: reverse cascade
+  const closeMenu = useCallback(() => {
+    // If speed sub-menu open, close it first
+    setSpd3Open(false);
+    setTimeout(() => setSpd2Open(false), 30);
+    setTimeout(() => setSpd1Open(false), 60);
+    setTimeout(() => {
+      setItem3Open(false);
+      setTimeout(() => setItem2Open(false), 40);
+      setTimeout(() => setItem1Open(false), 80);
+      setSpeedOpen(false);
+    }, 80);
+  }, []);
+
+  const openSpeed = useCallback(() => {
+    setSpd1Open(true);
+    setTimeout(() => setSpd2Open(true), 50);
+    setTimeout(() => setSpd3Open(true), 100);
+  }, []);
+
+  const closeSpeed = useCallback(() => {
+    setSpd3Open(false);
+    setTimeout(() => setSpd2Open(false), 30);
+    setTimeout(() => setSpd1Open(false), 60);
+  }, []);
+
+  const handleToggleMenu = () => {
+    playTock();
+    if (menuOpen) {
+      closeMenu();
+      setMenuOpen(false);
+    } else {
+      setMenuOpen(true);
+      openMenu();
+    }
+  };
+
+  const handleToggleSpeed = () => {
+    playTock();
+    if (speedOpen) {
+      closeSpeed();
+      setSpeedOpen(false);
+    } else {
+      setSpeedOpen(true);
+      openSpeed();
+    }
+  };
 
   const SPEEDS = [1, 1.5, 2];
+  const speedSprings = [ss1, ss2, ss3];
 
-  const menuItems = [
-    { icon: <Gauge size={18} strokeWidth={1.8} />, label: "Speed", action: () => setSpeedOpen(v => !v), spring: s1 },
-    { icon: <Bookmark size={18} strokeWidth={1.8} />, label: "Bookmark", action: () => { onBookmark(); setMenuOpen(false); }, spring: s2 },
-    { icon: <Share2 size={18} strokeWidth={1.8} />, label: "Share", action: () => { onShare(); setMenuOpen(false); }, spring: s3 },
-    { icon: <Copy size={18} strokeWidth={1.8} />, label: "Copy transcript", action: () => { onCopy(); setMenuOpen(false); }, spring: s4 },
-    { icon: <Trash2 size={18} strokeWidth={1.8} color="#E8470A" />, label: "Delete", action: () => { onDelete(); setMenuOpen(false); }, spring: s5 },
-  ];
+  // Shared animated item wrapper
+  const AnimItem = ({ spring, children, delay = 0 }: { spring: number; children: React.ReactNode; delay?: number }) => (
+    <div style={{
+      height: spring * 56,           // 48px button + 8px gap
+      overflow: "hidden",
+      opacity: spring,
+      transform: `translateY(${(1 - spring) * -8}px)`,
+      transition: `height 0.32s cubic-bezier(0.34,1.56,0.64,1), opacity 0.22s ease, transform 0.32s cubic-bezier(0.34,1.56,0.64,1)`,
+    }}>
+      <div style={{ paddingBottom: 8 }}>
+        {children}
+      </div>
+    </div>
+  );
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", gap:8, alignItems:"center" }}>
-      {/* Chevron — queue toggle */}
-      <IconBtn onClick={() => { setShowQueue(!showQueue); }} label="Toggle queue" playSound={playTock}>
-        <ChevronDown size={20} strokeWidth={1.5} style={{ transform:showQueue?"rotate(180deg)":"rotate(0deg)", transition:"transform 0.45s cubic-bezier(0.34,1.56,0.64,1)" }} />
-      </IconBtn>
+    <div style={{ display:"flex", flexDirection:"column", alignItems:"center" }}>
 
-      {/* Speed buttons — spring out when speedOpen */}
-      {speedOpen && menuOpen && SPEEDS.map((sp, i) => (
-        <div key={sp} style={{ transform:`scale(${s1})`, opacity:s1, transition:"none" }}>
-          <SpeedBtn speed={sp} active={speed === sp} onClick={() => { setSpeed(sp); playTock(); }} />
-        </div>
-      ))}
+      {/* Chevron — queue toggle, always on top */}
+      <div style={{ marginBottom: 8 }}>
+        <IconBtn onClick={() => { setShowQueue(!showQueue); }} label="Toggle queue" playSound={playTock}>
+          <ChevronDown size={20} strokeWidth={1.5} style={{ transform:showQueue?"rotate(180deg)":"rotate(0deg)", transition:"transform 0.45s cubic-bezier(0.34,1.56,0.64,1)" }} />
+        </IconBtn>
+      </div>
 
-      {/* Stacked menu items — spring out below ⋮ */}
-      {menuItems.map((item, i) => {
-        if (i === 0 && !menuOpen && !speedOpen) return null; // hide speed sub when closed
-        return (
-          <div key={item.label}
-            style={{
-              transform: `translateY(${(1 - item.spring) * -12}px) scale(${0.85 + item.spring * 0.15})`,
-              opacity: item.spring,
-              pointerEvents: item.spring < 0.1 ? "none" : "auto",
-              transitionDelay: `${i * 30}ms`,
-            }}
-          >
-            <IconBtn onClick={item.action} label={item.label} playSound={playTock} active={item.label === "Speed" && speedOpen}>
-              {item.icon}
-            </IconBtn>
-          </div>
-        );
-      })}
-
-      {/* ⋮ More button — always at bottom */}
-      <IconBtn onClick={() => { playTock(); setMenuOpen(v => !v); if (menuOpen) setSpeedOpen(false); }} label="More options" active={menuOpen}>
+      {/* ⋮ More button — fixed below chevron */}
+      <IconBtn onClick={handleToggleMenu} label="More options" active={menuOpen}>
         <MoreVertical size={20} strokeWidth={1.5} style={{ transform: menuOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.35s cubic-bezier(0.34,1.56,0.64,1)" }} />
       </IconBtn>
+
+      {/* Items cascade DOWN from ⋮ */}
+      <AnimItem spring={sp1}>
+        <IconBtn onClick={handleToggleSpeed} label="Playback speed" playSound={playTock} active={speedOpen}>
+          <Gauge size={18} strokeWidth={1.8} />
+        </IconBtn>
+      </AnimItem>
+
+      {/* Speed sub-items */}
+      {SPEEDS.map((sp, i) => (
+        <AnimItem key={sp} spring={speedSprings[i]}>
+          <SpeedBtn speed={sp} active={speed === sp} onClick={() => { setSpeed(sp); playTock(); }} />
+        </AnimItem>
+      ))}
+
+      <AnimItem spring={sp2}>
+        <IconBtn onClick={() => { onBookmark(); playTock(); closeMenu(); setMenuOpen(false); }} label="Bookmark" playSound={undefined}>
+          <Bookmark size={18} strokeWidth={1.8} />
+        </IconBtn>
+      </AnimItem>
+
+      <AnimItem spring={sp3}>
+        <IconBtn onClick={() => { onShare(); playTock(); closeMenu(); setMenuOpen(false); }} label="Share" playSound={undefined}>
+          <Share2 size={18} strokeWidth={1.8} />
+        </IconBtn>
+      </AnimItem>
+
     </div>
   );
 }
@@ -614,6 +689,7 @@ function SideMenu({
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function AudioPlayer() {
   const [noteIndex, setNoteIndex] = useState(0);
+  const [notes, setNotes] = useState(NOTES);
   const [displayTime, setDisplayTime] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [showLyrics, setShowLyrics] = useState(false);
@@ -626,7 +702,8 @@ export default function AudioPlayer() {
   const lastSecRef = useRef(-1);
   const playTock = useClickSound();
   const playTick = useTickSound();
-  const note = NOTES[noteIndex]; const total = note.duration;
+  const note = notes[noteIndex] ?? notes[0];
+  const total = note?.duration ?? 60;
 
   const tick = useCallback((ts: number) => {
     if (!playingRef.current) return;
@@ -641,6 +718,15 @@ export default function AudioPlayer() {
   const play = useCallback(() => { playingRef.current = true; startTsRef.current = null; setPlaying(true); rafRef.current = requestAnimationFrame(tick); }, [tick]);
   const pause = useCallback(() => { elapsedRef.current = displayTime; playingRef.current = false; startTsRef.current = null; cancelAnimationFrame(rafRef.current); setPlaying(false); }, [displayTime]);
   const stop = useCallback(() => { playingRef.current = false; startTsRef.current = null; elapsedRef.current = 0; lastSecRef.current = -1; cancelAnimationFrame(rafRef.current); setPlaying(false); setDisplayTime(0); }, []);
+
+  const deleteNote = useCallback((idx: number) => {
+    setNotes(prev => {
+      const next = prev.filter((_, i) => i !== idx);
+      if (idx < noteIndex) setNoteIndex(ni => Math.max(0, ni - 1));
+      else if (idx === noteIndex) { stop(); setNoteIndex(Math.min(idx, next.length - 1)); }
+      return next;
+    });
+  }, [noteIndex, stop]);
   const skipTo = useCallback((idx: number, dir: "left"|"right") => { stop(); setSkipDir(dir); setNoteIndex(idx); }, [stop]);
   const prev = () => { playTock(); skipTo((noteIndex - 1 + NOTES.length) % NOTES.length, "left"); };
   const next = () => { playTock(); skipTo((noteIndex + 1) % NOTES.length, "right"); };
@@ -706,8 +792,6 @@ export default function AudioPlayer() {
             playTock={playTock} speed={speed} setSpeed={setSpeed}
             onBookmark={() => alert("Bookmarked!")}
             onShare={() => alert("Share coming soon")}
-            onCopy={() => { const text = note.transcript.map(l => l.text).filter(Boolean).join(" "); navigator.clipboard?.writeText(text); }}
-            onDelete={() => alert("Delete coming soon")}
           />
         </div>
 
@@ -716,25 +800,67 @@ export default function AudioPlayer() {
           <div style={{ background:"#171717", borderRadius:"0 0 12px 0" }}>
             <div style={{ padding:"16px 24px 8px" }}>
               <p style={{ fontSize:11, fontWeight:600, color:"#BDBDBD", letterSpacing:"0.12em", textTransform:"uppercase", margin:0 }}>
-                Voice Notes <span style={{ color:"#444", fontWeight:400 }}>— {NOTES.length} recordings</span>
+                Voice Notes <span style={{ color:"#444", fontWeight:400 }}>— {notes.length} recordings</span>
               </p>
             </div>
             <div style={{ maxHeight:320, overflowY:"auto", padding:"0 24px 16px", scrollbarWidth:"thin", scrollbarColor:"#2a2a2a transparent" }}>
-              {NOTES.map((n, i) => (
-                <div key={n.id} onClick={() => { playTock(); skipTo(i, i > noteIndex ? "right" : "left"); }}
-                  style={{ display:"flex", alignItems:"center", gap:14, padding:"9px 10px", borderRadius:8, cursor:"pointer", background:i===noteIndex?"#1C1C1C":"transparent", transition:"background 0.15s" }}
-                  onMouseEnter={(e) => { if (i !== noteIndex) (e.currentTarget as HTMLDivElement).style.background = "#1a1a1a"; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = i===noteIndex?"#1C1C1C":"transparent"; }}
-                >
-                  <div style={{ width:18, textAlign:"center", flexShrink:0, fontSize:13, color:"#BDBDBD", fontVariantNumeric:"tabular-nums" }}>
-                    {i===noteIndex && playing
-                      ? <span style={{ width:7, height:7, borderRadius:"50%", background:"#E8470A", display:"inline-block", animation:"pulseDot 1.6s ease-in-out infinite" }} />
-                      : i+1}
+              {notes.map((n, i) => {
+                const isActive = i === noteIndex;
+                return (
+                  <div key={n.id} onClick={() => { playTock(); skipTo(i, i > noteIndex ? "right" : "left"); }}
+                    style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 10px", borderRadius:8, cursor:"pointer", background:isActive?"#1C1C1C":"transparent", transition:"background 0.15s" }}
+                    onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLDivElement).style.background = "#1a1a1a"; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = isActive?"#1C1C1C":"transparent"; }}
+                  >
+                    {/* Number / playing dot */}
+                    <div style={{ width:18, textAlign:"center", flexShrink:0, fontSize:13, color:"#BDBDBD", fontVariantNumeric:"tabular-nums" }}>
+                      {isActive && playing
+                        ? <span style={{ width:7, height:7, borderRadius:"50%", background:"#E8470A", display:"inline-block", animation:"pulseDot 1.6s ease-in-out infinite" }} />
+                        : i+1}
+                    </div>
+
+                    {/* Title */}
+                    <span style={{ flex:1, fontSize:14, fontWeight:isActive?500:400, color:isActive?"#ffffff":"#BDBDBD", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{n.title}</span>
+
+                    {/* Copy + Delete — only on active row */}
+                    {isActive && (
+                      <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0 }} onClick={(e) => e.stopPropagation()}>
+                        {/* Copy transcript */}
+                        <button
+                          onClick={() => {
+                            const text = n.transcript.filter(l => l.text).map(l => l.text).join(" ");
+                            navigator.clipboard?.writeText(text);
+                            playTock();
+                          }}
+                          aria-label="Copy transcript"
+                          style={{ width:28, height:28, borderRadius:6, background:"#2a2a2a", border:"none", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"#BDBDBD", transition:"background 0.15s, color 0.15s" }}
+                          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#333"; (e.currentTarget as HTMLButtonElement).style.color = "#fff"; }}
+                          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#2a2a2a"; (e.currentTarget as HTMLButtonElement).style.color = "#BDBDBD"; }}
+                        >
+                          <Copy size={13} strokeWidth={1.8} />
+                        </button>
+
+                        {/* Delete note */}
+                        <button
+                          onClick={() => {
+                            playTock();
+                            deleteNote(i);
+                          }}
+                          aria-label="Delete note"
+                          style={{ width:28, height:28, borderRadius:6, background:"#2a2a2a", border:"none", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"#BDBDBD", transition:"background 0.15s, color 0.15s" }}
+                          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#3a1a1a"; (e.currentTarget as HTMLButtonElement).style.color = "#E8470A"; }}
+                          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#2a2a2a"; (e.currentTarget as HTMLButtonElement).style.color = "#BDBDBD"; }}
+                        >
+                          <Trash2 size={13} strokeWidth={1.8} />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Duration */}
+                    <span style={{ fontSize:13, color:"#BDBDBD", fontVariantNumeric:"tabular-nums", flexShrink:0, marginLeft:4 }}>{formatTime(n.duration)}</span>
                   </div>
-                  <span style={{ flex:1, fontSize:14, fontWeight:i===noteIndex?500:400, color:i===noteIndex?"#ffffff":"#BDBDBD", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{n.title}</span>
-                  <span style={{ fontSize:13, color:"#BDBDBD", fontVariantNumeric:"tabular-nums", flexShrink:0 }}>{formatTime(n.duration)}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </AnimatedPanel>
