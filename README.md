@@ -44,7 +44,7 @@ npm start
 audio-player/
 ├── app/
 │   ├── components/
-│   │   └── AudioPlayer.tsx     # Main player — waveform, controls, queue, transcript
+│   │   └── AudioPlayer.tsx     # Main player component
 │   ├── globals.css             # IBM Plex Sans @font-face + base styles
 │   ├── layout.tsx
 │   └── page.tsx
@@ -71,7 +71,7 @@ audio-player/
 - ▶️ Play / Pause / Stop
 - ⏭ Skip between tracks
 - 🎚 Click waveform to scrub
-- 🌊 Mirrored waveform with travelling glow at playhead
+- 🌊 Travelling glow pulse waveform — bars rise and fall as playhead passes
 - 📋 Transcript panel toggle
 - 🎵 Track queue
 - 🌑 Dark theme — `#111111` / `#171717` / `#1C1C1C`
@@ -83,7 +83,7 @@ audio-player/
 ```bash
 git init
 git add .
-git commit -m "feat: add audio player with mirrored waveform glow and track queue"
+git commit -m "feat: travelling glow pulse waveform — bars rise and collapse as playhead passes"
 git branch -M main
 git remote add origin https://github.com/your-username/audio-player.git
 git push -u origin main

@@ -21,11 +21,11 @@ interface Track {
 }
 
 const TRACKS: Track[] = [
-  { id: 1, title: "Pray for me - Theophilus Sunday",    duration: 321 },
-  { id: 2, title: "Glorious - Theophilus Sunday",       duration: 274 },
-  { id: 3, title: "Way Maker - Sinach",                 duration: 348 },
-  { id: 4, title: "Hallelujah Challenge - N. Bassey",   duration: 412 },
-  { id: 5, title: "All Things New - Theophilus Sunday", duration: 289 },
+  { id: 1, title: "Pray for me - Theophilus Sunday",     duration: 321 },
+  { id: 2, title: "Glorious - Theophilus Sunday",        duration: 274 },
+  { id: 3, title: "Way Maker - Sinach",                  duration: 348 },
+  { id: 4, title: "Hallelujah Challenge - N. Bassey",    duration: 412 },
+  { id: 5, title: "All Things New - Theophilus Sunday",  duration: 289 },
 ];
 
 const TRANSCRIPT_LINES = [
@@ -35,22 +35,23 @@ const TRANSCRIPT_LINES = [
   "Thou who rulest wind and water, stand by me.",
 ];
 
-// ─── Waveform ─────────────────────────────────────────────────────────────────
-// Deterministic bell-curve envelope with fine detail.
-// Heights are normalised 0→1 and represent HALF-height (bar mirrors top+bottom).
+// ─── Waveform shape ───────────────────────────────────────────────────────────
+// Each value is the MAX possible height (0→1) for that bar column.
+// The glow window will modulate the actual visible height.
+// Deterministic — no Math.random().
 
-const NUM_BARS = 100;
+const NUM_BARS = 120;
 
-const WAVE_HEIGHTS: number[] = Array.from({ length: NUM_BARS }, (_, i) => {
-  const t = i / (NUM_BARS - 1); // 0 → 1
-  // Bell curve peaked slightly left of centre (matches the GIF)
-  const envelope = Math.exp(-Math.pow((t - 0.42) * 2.8, 2));
-  // Deterministic fine detail — no Math.random()
+const BAR_SHAPE: number[] = Array.from({ length: NUM_BARS }, (_, i) => {
+  const t = i / (NUM_BARS - 1);
   const detail =
-    Math.abs(Math.sin(i * 0.53 + 1.1)) * 0.3 +
-    Math.abs(Math.sin(i * 1.17 + 0.4)) * 0.2 +
-    Math.abs(Math.sin(i * 0.23 + 2.7)) * 0.15;
-  return Math.max(0.04, Math.min(1, envelope * (0.5 + detail * 0.5)));
+    Math.abs(Math.sin(i * 0.61 + 1.0)) * 0.35 +
+    Math.abs(Math.sin(i * 1.33 + 0.5)) * 0.25 +
+    Math.abs(Math.sin(i * 0.27 + 2.3)) * 0.20 +
+    Math.abs(Math.sin(i * 2.10 + 0.9)) * 0.10;
+  // Slight overall envelope so very first and last bars aren't too tall
+  const edge = 1 - Math.pow(Math.abs(t - 0.5) * 1.2, 3);
+  return Math.max(0.06, Math.min(1, detail * edge));
 });
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -108,8 +109,9 @@ function Waveform({
   progress: number; // 0 → 1
   onScrub: (pct: number) => void;
 }) {
-  const CONTAINER_HEIGHT = 110;
-  const MAX_HALF_HEIGHT = 52; // max half-bar height in px (mirrored)
+  const MAX_HEIGHT = 100; // px — max bar height (bottom-anchored)
+  // Glow window half-width in bar units (how many bars on each side are lit)
+  const GLOW_HALF = 0.18; // fraction of total width
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -125,34 +127,34 @@ function Waveform({
       aria-valuemax={100}
       aria-label="Audio progress"
       style={{
-        height: CONTAINER_HEIGHT,
+        height: MAX_HEIGHT + 10,
         display: "flex",
-        alignItems: "center",       // vertical centre — bars grow up AND down
-        gap: 1,
+        alignItems: "flex-end", // bottom-anchored bars
+        gap: 1.5,
         cursor: "pointer",
         overflow: "hidden",
-        margin: "16px 0 20px",
+        margin: "18px 0 20px",
       }}
     >
-      {WAVE_HEIGHTS.map((h, i) => {
-        const barPct = i / (NUM_BARS - 1); // 0 → 1 position of this bar
+      {BAR_SHAPE.map((shape, i) => {
+        const barPos = i / (NUM_BARS - 1); // 0 → 1
 
-        // Distance from playhead — used for brightness glow
-        const dist = Math.abs(barPct - progress);
+        // Distance from playhead (0 = at playhead, 1 = far away)
+        const dist = Math.abs(barPos - progress);
 
-        // Glow window: bars within ~0.25 of the playhead get a brightness boost
-        const glowRadius = 0.30;
-        const glow = Math.max(0, 1 - dist / glowRadius); // 0 → 1
+        // Glow factor: 1.0 at playhead, 0.0 outside the window
+        // Smooth falloff using a gaussian-like curve
+        const glow = dist < GLOW_HALF
+          ? Math.pow(1 - dist / GLOW_HALF, 1.8)
+          : 0;
 
-        // Base brightness from the bell-curve height (darker at edges)
-        // Far edges: ~0.10 opacity. Centre peak: ~0.70 opacity.
-        const baseBrightness = 0.10 + h * 0.60;
+        // Height: only visible inside the glow window
+        // Bars outside the window collapse to near-zero
+        const heightFactor = glow * shape;
+        const heightPx = Math.max(2, Math.round(heightFactor * MAX_HEIGHT));
 
-        // Add glow on top — playhead region becomes brighter
-        const brightness = Math.min(1, baseBrightness + glow * 0.55);
-
-        const halfHeight = Math.round(h * MAX_HALF_HEIGHT);
-        const barHeight = halfHeight * 2; // full mirrored height
+        // Brightness: bright white at playhead, fades to nothing outside window
+        const opacity = glow * 0.88 + (glow > 0 ? 0.08 : 0);
 
         return (
           <div
@@ -160,12 +162,13 @@ function Waveform({
             style={{
               flex: 1,
               minWidth: 2,
-              maxWidth: 5,
-              height: barHeight,
-              background: `rgba(255, 255, 255, ${brightness})`,
-              borderRadius: 0,         // flat tops and bottoms — no rounding
+              maxWidth: 6,
+              height: heightPx,
+              background: `rgba(255, 255, 255, ${opacity})`,
+              borderRadius: 0,
               flexShrink: 0,
-              transition: "background 0.05s linear",
+              // Smooth height transitions as glow passes
+              transition: "height 0.04s linear, background 0.04s linear",
             }}
           />
         );
@@ -234,8 +237,6 @@ export default function AudioPlayer() {
 
   useEffect(() => () => clearTick(), [clearTick]);
 
-  // ── Derived ───────────────────────────────────────────────────────────────
-
   const progress    = total > 0 ? current / total : 0;
   const statusLabel = playing ? "Playing" : current > 0 ? "Paused" : "Stopped";
 
@@ -288,7 +289,7 @@ export default function AudioPlayer() {
       {/* ── Player row ───────────────────────────────────────────────────────── */}
       <div style={{ display: "flex", alignItems: "stretch", gap: 10 }}>
 
-        {/* ── Main card ──────────────────────────────────────────────────────── */}
+        {/* Main card */}
         <div
           style={{
             flex: 1,
@@ -298,7 +299,7 @@ export default function AudioPlayer() {
             padding: "22px 24px 20px",
           }}
         >
-          {/* Meta: title + timer */}
+          {/* Meta row */}
           <div
             style={{
               display: "flex",
@@ -327,9 +328,7 @@ export default function AudioPlayer() {
                     background: "#E8470A",
                     display: "inline-block",
                     flexShrink: 0,
-                    animation: playing
-                      ? "pulseDot 1.6s ease-in-out infinite"
-                      : "none",
+                    animation: playing ? "pulseDot 1.6s ease-in-out infinite" : "none",
                   }}
                 />
                 <span
@@ -385,7 +384,6 @@ export default function AudioPlayer() {
               }
             </IconBtn>
 
-            {/* Stop — white pill */}
             <button
               onClick={stop}
               style={{
@@ -419,12 +417,9 @@ export default function AudioPlayer() {
           </div>
         </div>
 
-        {/* ── Side buttons ───────────────────────────────────────────────────── */}
+        {/* Side buttons */}
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <IconBtn
-            onClick={() => setShowQueue((v) => !v)}
-            label="Toggle queue"
-          >
+          <IconBtn onClick={() => setShowQueue((v) => !v)} label="Toggle queue">
             <ChevronDown
               size={20}
               strokeWidth={1.5}
