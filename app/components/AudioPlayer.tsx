@@ -24,19 +24,64 @@ const gap = (id: number, t: number): TranscriptLine => ({ id, startTime: t, text
 
 const TRACKS: Track[] = [
   { id: 1, title: "Pray for me - Theophilus Sunday", duration: 321, transcript: [
-    {id:1,startTime:0,text:"Lord I need you now"},{id:2,startTime:5,text:"More than I ever did before"},{id:3,startTime:10,text:"I'm crying out, I'm reaching out"},{id:4,startTime:15,text:"Lord please open up the door"},gap(5,20),{id:6,startTime:22,text:"When the storms of life are raging"},{id:7,startTime:27,text:"Stand by me"},{id:8,startTime:31,text:"When the world is tossing me"},{id:9,startTime:35,text:"Like a ship upon the sea"},{id:10,startTime:39,text:"Thou who rulest wind and water"},{id:11,startTime:44,text:"Stand by me"},gap(12,48),{id:13,startTime:50,text:"Pray for me"},{id:14,startTime:54,text:"When I cannot pray for myself"},{id:15,startTime:59,text:"Pray for me"},{id:16,startTime:63,text:"Lord intercede"},{id:17,startTime:67,text:"When words fail me"},{id:18,startTime:71,text:"And tears are all I have"},{id:19,startTime:76,text:"Pray for me"},gap(20,81),{id:21,startTime:83,text:"In my trials Lord walk with me"},{id:22,startTime:88,text:"When my heart is almost breaking"},{id:23,startTime:93,text:"Lord walk with me"},{id:24,startTime:97,text:"When I'm growing old and feeble"},{id:25,startTime:102,text:"And my eyes grow dim with age"},{id:26,startTime:107,text:"Lord I need a friend to help me"},{id:27,startTime:112,text:"Stand by me"},gap(28,117),{id:29,startTime:119,text:"You know the depths of my heart"},{id:30,startTime:124,text:"You know the things I cannot say"},{id:31,startTime:129,text:"Father speak on my behalf"},{id:32,startTime:134,text:"And make a way"},{id:33,startTime:139,text:"Make a way"},gap(34,144),{id:35,startTime:146,text:"Pray for me"},{id:36,startTime:150,text:"When my faith is running dry"},{id:37,startTime:155,text:"You are the one who prays for me"},
+    {id:1,startTime:0,text:"Lord I need you now"},{id:2,startTime:5,text:"More than I ever did before"},{id:3,startTime:10,text:"I'm crying out, I'm reaching out"},{id:4,startTime:15,text:"Lord please open up the door"},gap(5,20),{id:6,startTime:22,text:"When the storms of life are raging"},{id:7,startTime:27,text:"Stand by me"},{id:8,startTime:31,text:"When the world is tossing me"},{id:9,startTime:35,text:"Like a ship upon the sea"},{id:10,startTime:39,text:"Thou who rulest wind and water"},{id:11,startTime:44,text:"Stand by me"},gap(12,48),{id:13,startTime:50,text:"Pray for me"},{id:14,startTime:54,text:"When I cannot pray for myself"},{id:15,startTime:59,text:"Pray for me"},{id:16,startTime:63,text:"Lord intercede"},{id:17,startTime:67,text:"When words fail me"},{id:18,startTime:71,text:"And tears are all I have"},{id:19,startTime:76,text:"Pray for me"},gap(20,81),{id:21,startTime:83,text:"You know the depths of my heart"},{id:22,startTime:88,text:"You know the things I cannot say"},{id:23,startTime:93,text:"Father speak on my behalf"},{id:24,startTime:98,text:"And make a way"},
   ]},
   { id: 2, title: "Glorious - Theophilus Sunday", duration: 274, transcript: [
-    {id:1,startTime:0,text:"Glorious, glorious"},{id:2,startTime:5,text:"God in the highest"},{id:3,startTime:10,text:"Glorious, glorious"},{id:4,startTime:15,text:"Worthy of all praise"},gap(5,20),{id:6,startTime:22,text:"You are more beautiful"},{id:7,startTime:27,text:"Than anything I've ever seen"},{id:8,startTime:32,text:"Words cannot describe"},{id:9,startTime:37,text:"The glory of your majesty"},gap(10,42),{id:11,startTime:44,text:"In all of the earth"},{id:12,startTime:49,text:"Your glory is seen"},{id:13,startTime:54,text:"And I am undone"},{id:14,startTime:59,text:"By the beauty of the King"},gap(15,64),{id:16,startTime:66,text:"Let everything that has breath"},{id:17,startTime:71,text:"Praise the Lord"},{id:18,startTime:75,text:"Let everything that has breath"},{id:19,startTime:80,text:"Praise the Lord"},gap(20,85),{id:21,startTime:87,text:"Glorious, glorious"},{id:22,startTime:92,text:"God in the highest"},{id:23,startTime:97,text:"Holy, holy"},{id:24,startTime:102,text:"Is the Lord God Almighty"},gap(25,107),{id:26,startTime:109,text:"Heaven and earth are full"},{id:27,startTime:114,text:"Of your glory"},{id:28,startTime:119,text:"And my heart will always cry"},{id:29,startTime:124,text:"Glorious"},
+    {id:1,startTime:0,text:"Glorious, glorious"},{id:2,startTime:5,text:"God in the highest"},{id:3,startTime:10,text:"Glorious, glorious"},{id:4,startTime:15,text:"Worthy of all praise"},gap(5,20),{id:6,startTime:22,text:"You are more beautiful"},{id:7,startTime:27,text:"Than anything I've ever seen"},{id:8,startTime:32,text:"Words cannot describe"},{id:9,startTime:37,text:"The glory of your majesty"},gap(10,42),{id:11,startTime:44,text:"In all of the earth"},{id:12,startTime:49,text:"Your glory is seen"},{id:13,startTime:54,text:"And I am undone"},{id:14,startTime:59,text:"By the beauty of the King"},
   ]},
   { id: 3, title: "Way Maker - Sinach", duration: 348, transcript: [
-    {id:1,startTime:0,text:"You are here, moving in our midst"},{id:2,startTime:7,text:"I worship you, I worship you"},{id:3,startTime:14,text:"You are here, working in this place"},{id:4,startTime:21,text:"I worship you, I worship you"},gap(5,28),{id:6,startTime:30,text:"Way maker, miracle worker"},{id:7,startTime:36,text:"Promise keeper, light in the darkness"},{id:8,startTime:43,text:"My God, that is who you are"},gap(9,50),{id:10,startTime:52,text:"You are here, touching every heart"},{id:11,startTime:59,text:"I worship you, I worship you"},{id:12,startTime:66,text:"You are here, healing every heart"},{id:13,startTime:73,text:"I worship you, I worship you"},gap(14,80),{id:15,startTime:82,text:"Even when I don't see it"},{id:16,startTime:87,text:"You're working"},{id:17,startTime:91,text:"Even when I don't feel it"},{id:18,startTime:96,text:"You're working"},{id:19,startTime:100,text:"You never stop"},{id:20,startTime:104,text:"You never stop working"},
+    {id:1,startTime:0,text:"You are here, moving in our midst"},{id:2,startTime:7,text:"I worship you, I worship you"},{id:3,startTime:14,text:"You are here, working in this place"},{id:4,startTime:21,text:"I worship you, I worship you"},gap(5,28),{id:6,startTime:30,text:"Way maker, miracle worker"},{id:7,startTime:36,text:"Promise keeper, light in the darkness"},{id:8,startTime:43,text:"My God, that is who you are"},gap(9,50),{id:10,startTime:52,text:"Even when I don't see it"},{id:11,startTime:57,text:"You're working"},{id:12,startTime:61,text:"You never stop working"},
   ]},
   { id: 4, title: "Hallelujah Challenge - N. Bassey", duration: 412, transcript: [
-    {id:1,startTime:0,text:"Hallelujah"},{id:2,startTime:4,text:"Hallelujah"},{id:3,startTime:8,text:"Hallelujah"},{id:4,startTime:12,text:"Praise the Lord"},gap(5,16),{id:6,startTime:18,text:"You deserve all the glory"},{id:7,startTime:23,text:"You deserve all the honour"},{id:8,startTime:28,text:"You deserve all the praise"},gap(9,33),{id:10,startTime:35,text:"For the Lord is good"},{id:11,startTime:40,text:"And his mercy endures forever"},{id:12,startTime:46,text:"His truth endures to all generations"},gap(13,52),{id:14,startTime:54,text:"Sing hallelujah to the Lord"},{id:15,startTime:60,text:"Sing hallelujah"},{id:16,startTime:65,text:"Sing hallelujah to the Lord"},{id:17,startTime:71,text:"Sing hallelujah"},gap(18,76),{id:19,startTime:78,text:"Great is the Lord"},{id:20,startTime:83,text:"And greatly to be praised"},{id:21,startTime:88,text:"His greatness is unsearchable"},{id:22,startTime:94,text:"Hallelujah"},
+    {id:1,startTime:0,text:"Hallelujah"},{id:2,startTime:4,text:"Hallelujah"},{id:3,startTime:8,text:"Praise the Lord"},gap(4,13),{id:5,startTime:15,text:"You deserve all the glory"},{id:6,startTime:20,text:"You deserve all the honour"},{id:7,startTime:25,text:"You deserve all the praise"},
   ]},
   { id: 5, title: "All Things New - Theophilus Sunday", duration: 289, transcript: [
-    {id:1,startTime:0,text:"Behold I make all things new"},{id:2,startTime:7,text:"Behold I make all things new"},{id:3,startTime:14,text:"The former things have passed away"},{id:4,startTime:21,text:"Behold I make all things new"},gap(5,28),{id:6,startTime:30,text:"Your past does not define you"},{id:7,startTime:36,text:"My grace has now refined you"},{id:8,startTime:42,text:"I have called you by your name"},{id:9,startTime:48,text:"You are mine"},gap(10,53),{id:11,startTime:55,text:"The shame you wore like clothing"},{id:12,startTime:61,text:"The chains that kept you broken"},{id:13,startTime:67,text:"I have come to set you free"},{id:14,startTime:73,text:"You are free indeed"},gap(15,78),{id:16,startTime:80,text:"So let go of what is behind"},{id:17,startTime:86,text:"Press forward toward the prize"},{id:18,startTime:92,text:"The best is yet to come"},{id:19,startTime:98,text:"Fix your eyes"},{id:20,startTime:102,text:"Fix your eyes on me"},
+    {id:1,startTime:0,text:"Behold I make all things new"},{id:2,startTime:7,text:"The former things have passed away"},{id:3,startTime:14,text:"Behold I make all things new"},gap(4,21),{id:5,startTime:23,text:"Your past does not define you"},{id:6,startTime:29,text:"My grace has now refined you"},{id:7,startTime:35,text:"I have called you by your name"},{id:8,startTime:41,text:"You are mine"},
+  ]},
+  { id: 6, title: "No Longer Slaves - Bethel Music", duration: 356, transcript: [
+    {id:1,startTime:0,text:"You unravel me with a melody"},{id:2,startTime:6,text:"You surround me with a song"},{id:3,startTime:12,text:"Of deliverance from my enemies"},{id:4,startTime:18,text:"Till all my fears are gone"},gap(5,24),{id:6,startTime:26,text:"I'm no longer a slave to fear"},{id:7,startTime:32,text:"I am a child of God"},
+  ]},
+  { id: 7, title: "Reckless Love - Cory Asbury", duration: 398, transcript: [
+    {id:1,startTime:0,text:"Before I spoke a word, You were singing over me"},{id:2,startTime:7,text:"You have been so, so good to me"},{id:3,startTime:14,text:"Before I took a breath, You breathed Your life in me"},gap(4,21),{id:5,startTime:23,text:"Oh the overwhelming, never-ending reckless love of God"},{id:6,startTime:31,text:"It chases me down, fights till I'm found"},
+  ]},
+  { id: 8, title: "Goodness of God - Bethel Music", duration: 312, transcript: [
+    {id:1,startTime:0,text:"I love You Lord"},{id:2,startTime:5,text:"Oh Your mercy never fails me"},{id:3,startTime:10,text:"All my days, I've been held in Your hands"},gap(4,16),{id:5,startTime:18,text:"All my life You have been faithful"},{id:6,startTime:24,text:"All my life You have been so, so good"},
+  ]},
+  { id: 9, title: "Oceans - Hillsong United", duration: 445, transcript: [
+    {id:1,startTime:0,text:"You call me out upon the waters"},{id:2,startTime:6,text:"The great unknown where feet may fail"},{id:3,startTime:12,text:"And there I find You in the mystery"},gap(4,18),{id:5,startTime:20,text:"Spirit lead me where my trust is without borders"},{id:6,startTime:27,text:"Let me walk upon the waters"},
+  ]},
+  { id: 10, title: "What a Beautiful Name - Hillsong", duration: 361, transcript: [
+    {id:1,startTime:0,text:"You were the Word at the beginning"},{id:2,startTime:6,text:"One with God the Lord Most High"},{id:3,startTime:12,text:"Your hidden glory in creation"},gap(4,18),{id:5,startTime:20,text:"What a beautiful Name it is"},{id:6,startTime:26,text:"What a beautiful Name it is"},{id:7,startTime:32,text:"The Name of Jesus Christ my King"},
+  ]},
+  { id: 11, title: "King of Kings - Hillsong Worship", duration: 389, transcript: [
+    {id:1,startTime:0,text:"In the darkness we were waiting"},{id:2,startTime:6,text:"Without hope, without light"},{id:3,startTime:12,text:"Till from Heaven You came running"},gap(4,18),{id:5,startTime:20,text:"Praise the Father, praise the Son"},{id:6,startTime:26,text:"Praise the Spirit, three in one"},
+  ]},
+  { id: 12, title: "Do It Again - Elevation Worship", duration: 332, transcript: [
+    {id:1,startTime:0,text:"Walking around these walls"},{id:2,startTime:5,text:"I thought by now they'd fall"},{id:3,startTime:10,text:"But You have never failed me yet"},gap(4,15),{id:5,startTime:17,text:"Your promise still stands"},{id:6,startTime:22,text:"Great is Your faithfulness"},
+  ]},
+  { id: 13, title: "Graves Into Gardens - Elevation", duration: 278, transcript: [
+    {id:1,startTime:0,text:"I searched the world but it couldn't fill me"},{id:2,startTime:7,text:"Man's empty praise and treasures that fade"},{id:3,startTime:14,text:"Are never enough"},gap(4,19),{id:5,startTime:21,text:"You turn mourning to dancing"},{id:6,startTime:27,text:"You give beauty for ashes"},
+  ]},
+  { id: 14, title: "Build My Life - Housefires", duration: 267, transcript: [
+    {id:1,startTime:0,text:"Worthy of every song we could ever sing"},{id:2,startTime:7,text:"Worthy of all the praise we could ever bring"},{id:3,startTime:14,text:"Worthy of every breath we could ever breathe"},gap(4,21),{id:5,startTime:23,text:"I will build my life upon Your love"},{id:6,startTime:29,text:"It is a firm foundation"},
+  ]},
+  { id: 15, title: "Holy Forever - Chris Tomlin", duration: 344, transcript: [
+    {id:1,startTime:0,text:"A thousand generations falling down in worship"},{id:2,startTime:8,text:"To sing the song of ages to the Lamb"},{id:3,startTime:16,text:"And all who've gone before us"},gap(4,22),{id:5,startTime:24,text:"Holy, holy, holy is the Lord Almighty"},{id:6,startTime:31,text:"Who was and is and is to come"},
+  ]},
+  { id: 16, title: "My Testimony - Elevation Worship", duration: 298, transcript: [
+    {id:1,startTime:0,text:"I came from nothing"},{id:2,startTime:5,text:"You called me worthy"},{id:3,startTime:10,text:"Alive for Your glory"},gap(4,15),{id:5,startTime:17,text:"All that I have"},{id:6,startTime:22,text:"All that I am"},{id:7,startTime:27,text:"Here for Your glory"},
+  ]},
+  { id: 17, title: "The Blessing - Kari Jobe", duration: 378, transcript: [
+    {id:1,startTime:0,text:"The Lord bless you and keep you"},{id:2,startTime:7,text:"Make His face shine upon you"},{id:3,startTime:14,text:"And be gracious to you"},gap(4,20),{id:5,startTime:22,text:"The Lord turn His face toward you"},{id:6,startTime:29,text:"And give you peace"},
+  ]},
+  { id: 18, title: "Surrounded - Michael W. Smith", duration: 312, transcript: [
+    {id:1,startTime:0,text:"This is how I fight my battles"},{id:2,startTime:6,text:"It may look like I'm surrounded"},{id:3,startTime:12,text:"But I am surrounded by You"},gap(4,18),{id:5,startTime:20,text:"You are holy, Lord Almighty"},{id:6,startTime:26,text:"Praise the Lord"},
+  ]},
+  { id: 19, title: "Same God - Elevation Worship", duration: 334, transcript: [
+    {id:1,startTime:0,text:"I'm calling on the God of Jacob"},{id:2,startTime:7,text:"Whose love endures through generations"},{id:3,startTime:14,text:"I know that You will keep Your promises"},gap(4,21),{id:5,startTime:23,text:"You're the same God"},{id:6,startTime:28,text:"Yesterday, today and forever"},
+  ]},
+  { id: 20, title: "Champion - Bethel Music", duration: 289, transcript: [
+    {id:1,startTime:0,text:"You are the Lord of all creation"},{id:2,startTime:7,text:"All things were made by You"},{id:3,startTime:14,text:"Before the world was ever spoken"},gap(4,20),{id:5,startTime:22,text:"God You reign forever"},{id:6,startTime:28,text:"Champion, mighty in battle"},
   ]},
 ];
 
@@ -53,32 +98,36 @@ function formatTime(s: number) {
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 }
 
-// ─── Glitch timer ─────────────────────────────────────────────────────────────
-function GlitchTimer({ time }: { time: string }) {
+// ─── Glitch timer — only glitches on trackIndex change, not on time tick ──────
+function GlitchTimer({ time, trackIndex }: { time: string; trackIndex: number }) {
   const [display, setDisplay] = useState(time);
   const [glitching, setGlitching] = useState(false);
-  const prevTime = useRef(time);
+  const prevIndex = useRef(trackIndex);
   const rafRef = useRef<number>(0);
 
+  // Update display quietly during normal playback
   useEffect(() => {
-    if (time === prevTime.current) return;
-    prevTime.current = time;
+    if (!glitching) setDisplay(time);
+  }, [time, glitching]);
+
+  // Only trigger glitch on track change
+  useEffect(() => {
+    if (trackIndex === prevIndex.current) return;
+    prevIndex.current = trackIndex;
 
     setGlitching(true);
     const chars = "0123456789";
-    const target = time;
-    let elapsed = 0;
-    const duration = 500; // ms
     const startTs = performance.now();
+    const duration = 600;
 
     const tick = (ts: number) => {
-      elapsed = ts - startTs;
+      const elapsed = ts - startTs;
       const progress = Math.min(1, elapsed / duration);
+      const target = time;
 
-      // Each character resolves left to right
       const result = target.split("").map((char, i) => {
         if (char === ":") return ":";
-        const charProgress = Math.max(0, (progress - i * 0.12));
+        const charProgress = Math.max(0, (progress - i * 0.15));
         if (charProgress >= 1) return char;
         return chars[Math.floor(Math.random() * chars.length)];
       }).join("");
@@ -96,7 +145,7 @@ function GlitchTimer({ time }: { time: string }) {
     cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [time]);
+  }, [trackIndex]); // eslint-disable-line
 
   return (
     <span style={{
@@ -104,7 +153,7 @@ function GlitchTimer({ time }: { time: string }) {
       letterSpacing: "0.04em", lineHeight: 1,
       fontVariantNumeric: "tabular-nums",
       fontFamily: "'IBM Plex Sans', sans-serif",
-      filter: glitching ? "blur(0.4px)" : "none",
+      filter: glitching ? "blur(0.5px)" : "none",
       transition: "filter 0.1s",
     }}>
       {display}
@@ -126,13 +175,13 @@ function AnimatedTitle({ title, direction }: { title: string; direction: "left" 
       setDisplayed(title);
       setAnimState("enter");
       setTimeout(() => setAnimState("idle"), 350);
-    }, 220);
+    }, 200);
   }, [title]);
 
   const transforms: Record<string, string> = {
     idle:  "translateX(0px)",
-    exit:  direction === "right" ? "translateX(-24px)" : "translateX(24px)",
-    enter: direction === "right" ? "translateX(16px)"  : "translateX(-16px)",
+    exit:  direction === "right" ? "translateX(-28px)" : "translateX(28px)",
+    enter: direction === "right" ? "translateX(20px)"  : "translateX(-20px)",
   };
   const opacities: Record<string, number> = { idle: 1, exit: 0, enter: 0 };
 
@@ -143,10 +192,10 @@ function AnimatedTitle({ title, direction }: { title: string; direction: "left" 
       transform: transforms[animState],
       opacity: opacities[animState] ?? 1,
       transition: animState === "exit"
-        ? "transform 0.22s cubic-bezier(0.4,0,1,1), opacity 0.18s ease"
-        : animState === "enter"
-        ? "none"
-        : "transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease",
+        ? "transform 0.2s cubic-bezier(0.4,0,1,1), opacity 0.15s ease"
+        : animState === "idle"
+        ? "transform 0.38s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease"
+        : "none",
     }}>
       {displayed}
     </span>
@@ -238,7 +287,7 @@ function Waveform({ playing, progress, onScrub }: { playing: boolean; progress: 
       const dpr = window.devicePixelRatio || 1; const W = canvas.width / dpr; const H = canvas.height / dpr;
       if (playingRef.current) { if (lastTsRef.current !== null) tRef.current += (ts - lastTsRef.current) / 1000; lastTsRef.current = ts; } else { lastTsRef.current = null; }
       const t = tRef.current; const MAX_H = H - 4; ctx.clearRect(0, 0, W, H);
-      const barW = W / NUM_BARS; const gap = 1.5; const fillW = Math.max(1, barW - gap);
+      const barW = W / NUM_BARS; const gapPx = 1.5; const fillW = Math.max(1, barW - gapPx);
       for (let i = 0; i < NUM_BARS; i++) {
         const pos = i / (NUM_BARS - 1); const barH = BAR_HEIGHT[i] * MAX_H; let brightness: number;
         if (playingRef.current || t > 0) {
@@ -250,7 +299,7 @@ function Waveform({ playing, progress, onScrub }: { playing: boolean; progress: 
           const g3 = a3 * Math.exp(-Math.pow(Math.abs(pos - 0.5) / 0.55, 2) * 1.5);
           brightness = Math.min(1, 0.08 + BAR_HEIGHT[i] * 0.06 + Math.min(1, g1 + g2 + g3) * 0.82);
         } else { brightness = 0.08 + BAR_HEIGHT[i] * 0.10; }
-        ctx.fillStyle = `rgba(255,255,255,${brightness.toFixed(3)})`; ctx.fillRect(i * barW + gap / 2, H - barH, fillW, barH);
+        ctx.fillStyle = `rgba(255,255,255,${brightness.toFixed(3)})`; ctx.fillRect(i * barW + gapPx / 2, H - barH, fillW, barH);
       }
     };
     rafRef.current = requestAnimationFrame(draw); return () => cancelAnimationFrame(rafRef.current);
@@ -289,14 +338,9 @@ export default function AudioPlayer() {
   const play = useCallback(() => { playingRef.current = true; startTsRef.current = null; setPlaying(true); rafRef.current = requestAnimationFrame(tick); }, [tick]);
   const pause = useCallback(() => { elapsedRef.current = displayTime; playingRef.current = false; startTsRef.current = null; cancelAnimationFrame(rafRef.current); setPlaying(false); }, [displayTime]);
   const stop = useCallback(() => { playingRef.current = false; startTsRef.current = null; elapsedRef.current = 0; cancelAnimationFrame(rafRef.current); setPlaying(false); setDisplayTime(0); }, []);
-
-  const skipTo = useCallback((idx: number, dir: "left" | "right") => {
-    stop(); setSkipDir(dir); setTrackIndex(idx);
-  }, [stop]);
-
+  const skipTo = useCallback((idx: number, dir: "left" | "right") => { stop(); setSkipDir(dir); setTrackIndex(idx); }, [stop]);
   const prev = () => { playTock(); skipTo((trackIndex - 1 + TRACKS.length) % TRACKS.length, "left"); };
   const next = () => { playTock(); skipTo((trackIndex + 1) % TRACKS.length, "right"); };
-
   const scrub = (pct: number) => {
     const t = pct * total; elapsedRef.current = t; startTsRef.current = null; setDisplayTime(t);
     if (playingRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = requestAnimationFrame(tick); }
@@ -330,7 +374,7 @@ export default function AudioPlayer() {
                   <span style={{ fontSize: 14, fontWeight: 400, color: "#BDBDBD", letterSpacing: "0.01em" }}>{statusLabel}</span>
                 </div>
               </div>
-              <GlitchTimer time={formatTime(remaining)} />
+              <GlitchTimer time={formatTime(remaining)} trackIndex={trackIndex} />
             </div>
             <Waveform playing={playing} progress={progress} onScrub={scrub} />
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -357,22 +401,32 @@ export default function AudioPlayer() {
           </div>
         </div>
 
+        {/* Queue — scrollable, fixed max height */}
         <AnimatedPanel open={showQueue} style={{ marginRight: 58 }}>
-          <div style={{ background: "#171717", borderRadius: "0 0 12px 0", padding: "16px 24px" }}>
-            <p style={{ fontSize: 11, fontWeight: 600, color: "#BDBDBD", letterSpacing: "0.12em", textTransform: "uppercase", margin: "0 0 12px" }}>Queue</p>
-            {TRACKS.map((t, i) => (
-              <div key={t.id} onClick={() => { playTock(); skipTo(i, i > trackIndex ? "right" : "left"); }}
-                style={{ display: "flex", alignItems: "center", gap: 14, padding: "9px 10px", borderRadius: 8, cursor: "pointer", background: i === trackIndex ? "#1C1C1C" : "transparent", transition: "background 0.15s" }}
-                onMouseEnter={(e) => { if (i !== trackIndex) (e.currentTarget as HTMLDivElement).style.background = "#1a1a1a"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = i === trackIndex ? "#1C1C1C" : "transparent"; }}
-              >
-                <div style={{ width: 18, textAlign: "center", flexShrink: 0, fontSize: 13, color: "#BDBDBD", fontVariantNumeric: "tabular-nums" }}>
-                  {i === trackIndex && playing ? <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#E8470A", display: "inline-block", animation: "pulseDot 1.6s ease-in-out infinite" }} /> : i + 1}
+          <div style={{ background: "#171717", borderRadius: "0 0 12px 0" }}>
+            <div style={{ padding: "16px 24px 8px" }}>
+              <p style={{ fontSize: 11, fontWeight: 600, color: "#BDBDBD", letterSpacing: "0.12em", textTransform: "uppercase", margin: 0 }}>
+                Queue <span style={{ color: "#444", fontWeight: 400 }}>— {TRACKS.length} songs</span>
+              </p>
+            </div>
+            {/* Scrollable list */}
+            <div style={{ maxHeight: 320, overflowY: "auto", padding: "0 24px 16px", scrollbarWidth: "thin", scrollbarColor: "#2a2a2a transparent" }}>
+              {TRACKS.map((t, i) => (
+                <div key={t.id} onClick={() => { playTock(); skipTo(i, i > trackIndex ? "right" : "left"); }}
+                  style={{ display: "flex", alignItems: "center", gap: 14, padding: "9px 10px", borderRadius: 8, cursor: "pointer", background: i === trackIndex ? "#1C1C1C" : "transparent", transition: "background 0.15s" }}
+                  onMouseEnter={(e) => { if (i !== trackIndex) (e.currentTarget as HTMLDivElement).style.background = "#1a1a1a"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = i === trackIndex ? "#1C1C1C" : "transparent"; }}
+                >
+                  <div style={{ width: 18, textAlign: "center", flexShrink: 0, fontSize: 13, color: "#BDBDBD", fontVariantNumeric: "tabular-nums" }}>
+                    {i === trackIndex && playing
+                      ? <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#E8470A", display: "inline-block", animation: "pulseDot 1.6s ease-in-out infinite" }} />
+                      : i + 1}
+                  </div>
+                  <span style={{ flex: 1, fontSize: 14, fontWeight: i === trackIndex ? 500 : 400, color: i === trackIndex ? "#ffffff" : "#BDBDBD", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.title}</span>
+                  <span style={{ fontSize: 13, color: "#BDBDBD", fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{formatTime(t.duration)}</span>
                 </div>
-                <span style={{ flex: 1, fontSize: 14, fontWeight: i === trackIndex ? 500 : 400, color: i === trackIndex ? "#ffffff" : "#BDBDBD", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.title}</span>
-                <span style={{ fontSize: 13, color: "#BDBDBD", fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{formatTime(t.duration)}</span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </AnimatedPanel>
       </div>
