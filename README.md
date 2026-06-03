@@ -6,34 +6,21 @@ A sermon & podcast audio player built with **Next.js 14**, **TypeScript**, and *
 
 ## Getting Started
 
-### 1. Clone or download
-
 ```bash
 git clone https://github.com/your-username/audio-player.git
 cd audio-player
-```
-
-### 2. Install dependencies
-
-```bash
 npm install
-```
-
-### 3. Run locally
-
-```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000)
 
 ---
 
 ## Build for production
 
 ```bash
-npm run build
-npm start
+npm run build && npm start
 ```
 
 ---
@@ -44,36 +31,27 @@ npm start
 audio-player/
 ├── app/
 │   ├── components/
-│   │   └── AudioPlayer.tsx     # Main player component
-│   ├── globals.css             # IBM Plex Sans @font-face + base styles
+│   │   ├── AudioPlayer.tsx       # Main player
+│   │   └── TranscriptDrawer.tsx  # Right-slide transcript panel
+│   ├── globals.css               # IBM Plex Sans + animations
 │   ├── layout.tsx
 │   └── page.tsx
 ├── public/
-│   └── fonts/                  # Self-hosted IBM Plex Sans TTF files
-├── package.json
+│   └── fonts/                    # Self-hosted IBM Plex Sans TTF
 └── README.md
 ```
 
 ---
 
-## Tech Stack
-
-- [Next.js 14](https://nextjs.org/) — App Router
-- [TypeScript](https://www.typescriptlang.org/)
-- [Lucide React](https://lucide.dev/) — Icons
-- IBM Plex Sans — Self-hosted typeface
-- Tailwind CSS
-
----
-
 ## Features
 
-- ▶️ Play / Pause / Stop
+- ▶️ Play / Pause / Stop with spring-physics button animations
 - ⏭ Skip between tracks
-- 🎚 Click waveform to scrub
-- 🌊 Travelling glow pulse waveform — bars rise and fall as playhead passes
-- 📋 Transcript panel toggle
-- 🎵 Track queue
+- 🎚 Waveform scrubbing
+- 🌊 Animated brightness waveform while playing
+- 📋 **Transcript drawer** — slides in from the right with live auto-scrolling lyrics
+- 🎵 Track queue with spring animation
+- 🔊 Soft tock click sound on every button (Web Audio API)
 - 🌑 Dark theme — `#111111` / `#171717` / `#1C1C1C`
 
 ---
@@ -81,9 +59,8 @@ audio-player/
 ## Push to GitHub
 
 ```bash
-git init
-git add .
-git commit -m "feat: travelling glow pulse waveform — bars rise and collapse as playhead passes"
+git init && git add .
+git commit -m "feat: right-slide transcript drawer with live auto-scrolling lyrics"
 git branch -M main
 git remote add origin https://github.com/your-username/audio-player.git
 git push -u origin main
