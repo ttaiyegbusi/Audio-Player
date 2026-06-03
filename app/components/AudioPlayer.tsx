@@ -227,6 +227,58 @@ function useClickSound() {
   }, [getCtx]);
 }
 
+// ─── Tick sound — soft mechanical click every second ─────────────────────────
+function useTickSound() {
+  const ctxRef = useRef<AudioContext | null>(null);
+  const getCtx = useCallback(() => {
+    if (!ctxRef.current) ctxRef.current = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+    return ctxRef.current;
+  }, []);
+
+  return useCallback(() => {
+    try {
+      const ctx = getCtx();
+      const now = ctx.currentTime;
+
+      // Very short filtered noise burst — the mechanical "click" transient
+      const bufSize = Math.floor(ctx.sampleRate * 0.018);
+      const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) {
+        // Exponential decay envelope on noise
+        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.12));
+      }
+      const noise = ctx.createBufferSource();
+      noise.buffer = buf;
+
+      // Bandpass filter — shapes noise into a tight mechanical click
+      const bp = ctx.createBiquadFilter();
+      bp.type = "bandpass";
+      bp.frequency.value = 2800;
+      bp.Q.value = 1.4;
+
+      // Low shelf to add a touch of body without muddiness
+      const shelf = ctx.createBiquadFilter();
+      shelf.type = "lowshelf";
+      shelf.frequency.value = 300;
+      shelf.gain.value = -6;
+
+      // Master gain — very quiet, 10% of button click volume
+      const master = ctx.createGain();
+      master.gain.setValueAtTime(0.055, now);
+      master.gain.exponentialRampToValueAtTime(0.001, now + 0.018);
+
+      noise.connect(bp);
+      bp.connect(shelf);
+      shelf.connect(master);
+      master.connect(ctx.destination);
+
+      noise.start(now);
+      noise.stop(now + 0.02);
+    } catch { /* ignore */ }
+  }, [getCtx]);
+}
+
 // ─── Spring panel ─────────────────────────────────────────────────────────────
 function useSpring(open: boolean) {
   const [v, setV] = useState(open ? 1 : 0);
@@ -324,25 +376,29 @@ export default function AudioPlayer() {
 
   const elapsedRef = useRef(0); const startTsRef = useRef<number | null>(null);
   const rafRef = useRef<number>(0); const playingRef = useRef(false);
+  const lastSecRef = useRef(-1);
   const playTock = useClickSound();
+  const playTick = useTickSound();
   const track = TRACKS[trackIndex]; const total = track.duration;
 
   const tick = useCallback((ts: number) => {
     if (!playingRef.current) return;
     if (startTsRef.current === null) startTsRef.current = ts;
     const elapsed = elapsedRef.current + (ts - startTsRef.current) / 1000;
-    if (elapsed >= total) { elapsedRef.current = 0; startTsRef.current = null; playingRef.current = false; setPlaying(false); setDisplayTime(0); return; }
+    if (elapsed >= total) { elapsedRef.current = 0; startTsRef.current = null; playingRef.current = false; lastSecRef.current = -1; setPlaying(false); setDisplayTime(0); return; }
+    const wholeSecond = Math.floor(elapsed);
+    if (wholeSecond !== lastSecRef.current) { lastSecRef.current = wholeSecond; playTick(); }
     setDisplayTime(elapsed); rafRef.current = requestAnimationFrame(tick);
-  }, [total]);
+  }, [total, playTick]);
 
   const play = useCallback(() => { playingRef.current = true; startTsRef.current = null; setPlaying(true); rafRef.current = requestAnimationFrame(tick); }, [tick]);
   const pause = useCallback(() => { elapsedRef.current = displayTime; playingRef.current = false; startTsRef.current = null; cancelAnimationFrame(rafRef.current); setPlaying(false); }, [displayTime]);
-  const stop = useCallback(() => { playingRef.current = false; startTsRef.current = null; elapsedRef.current = 0; cancelAnimationFrame(rafRef.current); setPlaying(false); setDisplayTime(0); }, []);
+  const stop = useCallback(() => { playingRef.current = false; startTsRef.current = null; elapsedRef.current = 0; lastSecRef.current = -1; cancelAnimationFrame(rafRef.current); setPlaying(false); setDisplayTime(0); }, []);
   const skipTo = useCallback((idx: number, dir: "left" | "right") => { stop(); setSkipDir(dir); setTrackIndex(idx); }, [stop]);
   const prev = () => { playTock(); skipTo((trackIndex - 1 + TRACKS.length) % TRACKS.length, "left"); };
   const next = () => { playTock(); skipTo((trackIndex + 1) % TRACKS.length, "right"); };
   const scrub = (pct: number) => {
-    const t = pct * total; elapsedRef.current = t; startTsRef.current = null; setDisplayTime(t);
+    const t = pct * total; elapsedRef.current = t; startTsRef.current = null; lastSecRef.current = Math.floor(t); setDisplayTime(t);
     if (playingRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = requestAnimationFrame(tick); }
   };
   useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
@@ -436,6 +492,7 @@ export default function AudioPlayer() {
         lines={track.transcript} currentTime={displayTime}
         playing={playing} onPlayPause={playing ? pause : play}
         onStop={() => { stop(); setShowLyrics(false); }}
+        onNext={() => { playTock(); skipTo((trackIndex + 1) % TRACKS.length, "right"); }}
         trackTitle={track.title}
       />
     </>

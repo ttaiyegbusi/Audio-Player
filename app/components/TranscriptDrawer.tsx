@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { X, Pause, Play, Square } from "lucide-react";
+import { X, Pause, Play, Square, SkipForward } from "lucide-react";
 
 export interface TranscriptLine {
   id: number;
@@ -17,6 +17,7 @@ interface Props {
   playing: boolean;
   onPlayPause: () => void;
   onStop: () => void;
+  onNext: () => void;
   trackTitle: string;
 }
 
@@ -41,7 +42,7 @@ class Spring {
   }
 }
 
-export default function TranscriptDrawer({ open, onClose, lines, currentTime, playing, onPlayPause, onStop, trackTitle }: Props) {
+export default function TranscriptDrawer({ open, onClose, lines, currentTime, playing, onPlayPause, onStop, onNext, trackTitle }: Props) {
   const [mounted, setMounted] = useState(false);
   const [position, setPosition] = useState<Position>("right");
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -300,11 +301,11 @@ export default function TranscriptDrawer({ open, onClose, lines, currentTime, pl
               onMouseUp={(e) => ((e.currentTarget as HTMLButtonElement).style.transform = "scale(1)")}
               onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.transform = "scale(1)")}
             >{playing ? <Pause size={22} fill="#111111" strokeWidth={0} /> : <Play size={22} fill="#111111" strokeWidth={0} />}</button>
-            <button onClick={onClose} style={{ width: 44, height: 44, borderRadius: "50%", background: "#2a2a2a", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "transform 0.3s cubic-bezier(0.34,1.56,0.64,1)" }}
+            <button onClick={onNext} style={{ width: 44, height: 44, borderRadius: "50%", background: "#2a2a2a", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "transform 0.3s cubic-bezier(0.34,1.56,0.64,1)" }}
               onMouseDown={(e) => ((e.currentTarget as HTMLButtonElement).style.transform = "scale(0.88)")}
               onMouseUp={(e) => ((e.currentTarget as HTMLButtonElement).style.transform = "scale(1)")}
               onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.transform = "scale(1)")}
-            ><X size={18} strokeWidth={2} color="#BDBDBD" /></button>
+            ><SkipForward size={18} fill="white" strokeWidth={0} /></button>
           </div>
         </div>
       </div>
